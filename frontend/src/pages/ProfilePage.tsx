@@ -7,7 +7,6 @@ import {
   Link as LinkIcon,
   Mail,
   MapPin,
-  MessageSquare,
   Pencil,
   Route,
   Sparkles,
@@ -19,7 +18,7 @@ import { Avatar } from '../components/Avatar'
 import { CollaborateButton } from '../components/CollaborateButton'
 import { ExpertLabel, LevelBadge, ProgressBar } from '../components/Meters'
 import { ButtonLink, Card, Chip, ErrorState, PageLoader } from '../components/ui'
-import { monthYear, percent, plural, timeAgo } from '../lib/format'
+import { monthYear, percent } from '../lib/format'
 import type { ConnectionState, UserProfile } from '../lib/types'
 import { useApi } from '../lib/useApi'
 import type { ConnectionStatus } from '../lib/useConnections'
@@ -127,33 +126,20 @@ export function ProfilePage() {
 
         <Section title={isExpert ? 'Expert in' : 'Career paths'}>
           {profile.paths.length === 0 && (
-            <p className="text-sm text-slate-500">
-              {isSelf ? (
-                <>
-                  You have not joined a path yet.{' '}
-                  <Link to="/fields/it" className="font-medium text-indigo-600 hover:underline">
-                    Explore career paths
-                  </Link>
-                </>
-              ) : (
-                'No career paths yet.'
-              )}
-            </p>
+            <p className="text-sm text-slate-500">{isSelf ? 'You have not joined a path yet.' : 'No career paths yet.'}</p>
           )}
           {isExpert ? (
             <div className="flex flex-wrap gap-2">
               {profile.paths.map((path) => (
-                <Link key={path.slug} to={`/fields/${path.fieldSlug}/${path.slug}`}>
-                  <Chip>{path.name}</Chip>
-                </Link>
+                <Chip key={path.slug}>{path.name}</Chip>
               ))}
             </div>
           ) : (
             <div className="space-y-4">
               {profile.paths.map((path) => (
-                <Link key={path.slug} to={`/fields/${path.fieldSlug}/${path.slug}?tab=roadmap`} className="block group">
+                <div key={path.slug}>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="flex items-center gap-2 font-medium text-slate-800 group-hover:text-indigo-600">
+                    <span className="flex items-center gap-2 font-medium text-slate-800">
                       <Route className="size-4 text-slate-400" />
                       {path.name}
                     </span>
@@ -162,7 +148,7 @@ export function ProfilePage() {
                     </span>
                   </div>
                   <ProgressBar value={path.completed} max={path.total} className="mt-1.5" />
-                </Link>
+                </div>
               ))}
             </div>
           )}
@@ -177,27 +163,6 @@ export function ProfilePage() {
             </div>
           </Section>
         )}
-
-        <Section title="Recent discussions">
-          {profile.recentTopics.length === 0 ? (
-            <p className="text-sm text-slate-500">No topics started yet.</p>
-          ) : (
-            <ul className="divide-y divide-slate-100">
-              {profile.recentTopics.map((topic) => (
-                <li key={topic.id} className="py-3 first:pt-0 last:pb-0">
-                  <Link to={`/topics/${topic.id}`} className="font-medium text-slate-800 hover:text-indigo-600">
-                    {topic.title}
-                  </Link>
-                  <p className="mt-0.5 flex items-center gap-2 text-xs text-slate-500">
-                    {topic.subFieldName} · {timeAgo(topic.createdAt)} ·
-                    <MessageSquare className="size-3" />
-                    {plural(topic.replyCount, 'reply', 'replies')}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Section>
       </div>
 
       <aside className="space-y-6">
@@ -285,23 +250,6 @@ export function ProfilePage() {
               </Link>{' '}
               to collaborate with {person.displayName.split(' ')[0]}.
             </p>
-          </Card>
-        )}
-
-        {isExpert && !isSelf && profile.paths.length > 0 && (
-          <Card className="p-6 text-sm text-slate-600">
-            <p className="flex items-center gap-1.5 font-semibold text-slate-900">
-              <MessageSquare className="size-4" />
-              Have a question for {person.displayName.split(' ')[0]}?
-            </p>
-            <p className="mt-1">Ask it in the discussions of their career path. Expert answers are pinned to the top.</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {profile.paths.map((path) => (
-                <ButtonLink key={path.slug} to={`/fields/${path.fieldSlug}/${path.slug}?tab=discussions`} variant="secondary" size="sm">
-                  {path.name} discussions
-                </ButtonLink>
-              ))}
-            </div>
           </Card>
         )}
       </aside>

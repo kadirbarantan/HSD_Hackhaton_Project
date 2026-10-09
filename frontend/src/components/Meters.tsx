@@ -1,5 +1,4 @@
 import { BadgeCheck, Sparkles } from 'lucide-react'
-import { difficultyLabels } from '../lib/format'
 import { cn } from '../lib/styles'
 
 const progressTones = {
@@ -26,25 +25,6 @@ export function ProgressBar({ value, max, tone = 'indigo', className }: Progress
       aria-valuenow={value}
     >
       <div className={cn('h-full rounded-full transition-all duration-500', progressTones[tone])} style={{ width: `${width}%` }} />
-    </div>
-  )
-}
-
-function difficultyColor(value: number) {
-  if (value <= 2) return 'bg-emerald-500'
-  if (value === 3) return 'bg-amber-500'
-  return 'bg-rose-500'
-}
-
-export function DifficultyMeter({ value, showLabel = true }: { value: number; showLabel?: boolean }) {
-  return (
-    <div className="flex items-center gap-2" title={`Entry difficulty: ${value} of 5`}>
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <span key={i} className={cn('h-1.5 w-4 rounded-full', i <= value ? difficultyColor(value) : 'bg-slate-200')} />
-        ))}
-      </div>
-      {showLabel && <span className="text-xs font-medium text-slate-600">{difficultyLabels[value]}</span>}
     </div>
   )
 }

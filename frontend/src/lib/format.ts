@@ -1,5 +1,3 @@
-import type { StepLevel, TopicKind } from './types'
-
 const relativeTime = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
 
 const timeUnits: [Intl.RelativeTimeFormatUnit, number][] = [
@@ -36,22 +34,3 @@ export function initials(name: string): string {
 export function percent(completed: number, total: number): number {
   return total === 0 ? 0 : Math.round((completed / total) * 100)
 }
-
-export function plural(count: number, singular: string, pluralForm = `${singular}s`): string {
-  return `${count} ${count === 1 ? singular : pluralForm}`
-}
-
-export const stepLevelLabels: Record<StepLevel, string> = {
-  Beginner: 'Beginner',
-  Intermediate: 'Intermediate',
-  JobReady: 'Job-ready',
-}
-
-export const topicKindLabels: Record<TopicKind, string> = {
-  Question: 'Question',
-  Advice: 'Advice',
-  Experience: 'Experience',
-  Resource: 'Resource',
-}
-
-export const difficultyLabels = ['', 'Easy to enter', 'Approachable', 'Moderate', 'Competitive', 'Very competitive']

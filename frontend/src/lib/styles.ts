@@ -30,24 +30,3 @@ export type ButtonSize = keyof typeof buttonSizes
 export function buttonClass(variant: ButtonVariant = 'primary', size: ButtonSize = 'md'): string {
   return cn(buttonBase, buttonVariants[variant], buttonSizes[size])
 }
-
-interface PathAccent {
-  gradient: string
-  soft: string
-  text: string
-}
-
-const pathAccents: Record<string, PathAccent> = {
-  'game-development': { gradient: 'from-violet-500 to-fuchsia-500', soft: 'bg-violet-50', text: 'text-violet-700' },
-  'web-development': { gradient: 'from-sky-500 to-indigo-500', soft: 'bg-sky-50', text: 'text-sky-700' },
-  'data-science-ai': { gradient: 'from-emerald-500 to-teal-500', soft: 'bg-emerald-50', text: 'text-emerald-700' },
-  cybersecurity: { gradient: 'from-rose-500 to-orange-500', soft: 'bg-rose-50', text: 'text-rose-700' },
-  'mobile-development': { gradient: 'from-amber-500 to-orange-500', soft: 'bg-amber-50', text: 'text-amber-700' },
-  'cloud-devops': { gradient: 'from-indigo-500 to-blue-500', soft: 'bg-indigo-50', text: 'text-indigo-700' },
-}
-
-const defaultAccent: PathAccent = { gradient: 'from-indigo-500 to-violet-500', soft: 'bg-indigo-50', text: 'text-indigo-700' }
-
-export function pathAccent(slug: string): PathAccent {
-  return pathAccents[slug] ?? defaultAccent
-}

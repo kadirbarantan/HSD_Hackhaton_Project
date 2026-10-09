@@ -1,4 +1,4 @@
-import { Compass, Handshake, LogOut, Map as MapIcon, Sparkles, Users, type LucideIcon } from 'lucide-react'
+import { Compass, Handshake, LogOut, Sparkles, Users, type LucideIcon } from 'lucide-react'
 import { useEffect, type ReactNode } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { useAuth } from '../auth/useAuth'
@@ -54,9 +54,6 @@ export function Layout() {
           </Link>
 
           <nav className="flex items-center gap-1 text-sm">
-            <NavItem to="/fields/it" icon={MapIcon}>
-              Explore
-            </NavItem>
             <NavItem to="/people" icon={Users}>
               People
             </NavItem>

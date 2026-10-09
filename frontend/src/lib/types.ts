@@ -1,8 +1,6 @@
 // Mirrors the DTOs in backend/CareerPath.Api/Dtos. Keep both sides in sync.
 
 export type Role = 'Student' | 'Expert'
-export type StepLevel = 'Beginner' | 'Intermediate' | 'JobReady'
-export type TopicKind = 'Question' | 'Advice' | 'Experience' | 'Resource'
 export type CollaborationStatus = 'Pending' | 'Accepted' | 'Declined'
 export type ConnectionState = 'None' | 'Self' | 'Outgoing' | 'Incoming' | 'Connected'
 
@@ -34,16 +32,6 @@ export interface PlatformStats {
   collaborations: number
 }
 
-export interface FieldSummary {
-  id: number
-  slug: string
-  name: string
-  description: string
-  icon: string
-  isActive: boolean
-  subFieldCount: number
-}
-
 export interface SubFieldCard {
   id: number
   slug: string
@@ -67,64 +55,6 @@ export interface FieldDetail {
   subFields: SubFieldCard[]
 }
 
-export interface RoadmapStep {
-  id: number
-  order: number
-  title: string
-  description: string
-  level: StepLevel
-  estimatedHours: number
-  resourceTitle: string
-  resourceUrl: string
-}
-
-export interface CommunityLink {
-  id: number
-  name: string
-  url: string
-  platform: string
-  description: string
-}
-
-export interface SubFieldDetail {
-  id: number
-  slug: string
-  name: string
-  icon: string
-  tagline: string
-  description: string
-  dayInTheLife: string
-  entryDifficulty: number
-  timeToJobReady: string
-  keySkills: string[]
-  firstJobs: string[]
-  goodFitIf: string[]
-  thinkTwiceIf: string[]
-  field: { slug: string; name: string }
-  roadmap: RoadmapStep[]
-  communities: CommunityLink[]
-  learnerCount: number
-  topicCount: number
-  isJoined: boolean
-  completedStepIds: number[]
-}
-
-export interface JoinResult {
-  isJoined: boolean
-  learnerCount: number
-}
-
-export interface ProgressResult {
-  subFieldSlug: string
-  completedStepIds: number[]
-  completed: number
-  total: number
-  xp: number
-  level: number
-  levelTitle: string
-  leveledUp: boolean
-}
-
 export interface Interest {
   slug: string
   name: string
@@ -145,59 +75,6 @@ export interface UserSummary {
   xp: number
   level: number
   levelTitle: string
-}
-
-export interface PathMember {
-  user: UserSummary
-  completed: number
-  total: number
-}
-
-export interface SubFieldPeople {
-  experts: PathMember[]
-  learners: PathMember[]
-}
-
-export interface Author {
-  id: number
-  displayName: string
-  role: Role
-  expertTitle: string | null
-}
-
-export interface TopicSummary {
-  id: number
-  title: string
-  kind: TopicKind
-  excerpt: string
-  author: Author
-  createdAt: string
-  lastActivityAt: string
-  replyCount: number
-  hasExpertReply: boolean
-  subFieldSlug: string
-  subFieldName: string
-  fieldSlug: string
-}
-
-export interface Reply {
-  id: number
-  body: string
-  author: Author
-  createdAt: string
-}
-
-export interface TopicDetail {
-  id: number
-  title: string
-  kind: TopicKind
-  body: string
-  author: Author
-  createdAt: string
-  subFieldSlug: string
-  subFieldName: string
-  fieldSlug: string
-  replies: Reply[]
 }
 
 export interface PathProgress {
