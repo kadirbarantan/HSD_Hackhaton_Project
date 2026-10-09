@@ -21,6 +21,7 @@ public record ListingDto(
     int HoursPerWeek,
     string Timeline,
     ListingStatus Status,
+    string? OutcomeNote,
     DateTime CreatedAt,
     int ApplicationCount,
     /// <summary>Applications the owner still has to answer. Invitations are waiting on the other person, so they do not count.</summary>
@@ -43,3 +44,6 @@ public record SaveListingRequest(
     [Range(1, 20)] int TeamSize,
     [Range(1, 40)] int HoursPerWeek,
     [StringLength(60)] string? Timeline);
+
+public record CloseListingWithNoteRequest(
+    [Required, StringLength(1000, MinimumLength = 5)] string Note);

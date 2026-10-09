@@ -142,6 +142,60 @@ public class ListingsController(AppDbContext db, ListingService listings, Profil
     public Task<ActionResult<ListingDto>> Reopen(int id) => SetStatusAsync(id, ListingStatus.Open);
 
     [Authorize]
+    [HttpPost("{id:int}/complete")]
+    public async Task<ActionResult<ListingDto>> Complete(int id, CloseListingWithNoteRequest request)
+    {
+        var userId = User.RequireUserId();
+        var listing = await db.Listings
+            .Include(l => l.Applications)
+            .FirstOrDefaultAsync(l => l.Id == id && l.OwnerId == userId);
+        if (listing is null)
+        {
+            return NotFound();
+        }
+
+        listing.Status = ListingStatus.Completed;
+        listing.OutcomeNote = request.Note.Trim();
+        listing.ClosedAt = DateTime.UtcNow;
+
+        foreach (var app in listing.Applications.Where(a => a.Status == ApplicationStatus.Accepted))
+        {
+            app.Status = ApplicationStatus.Completed;
+            app.RespondedAt ??= DateTime.UtcNow;
+        }
+
+        await db.SaveChangesAsync();
+        return await ReloadAsync(id, userId);
+    }
+
+    [Authorize]
+    [HttpPost("{id:int}/cancel")]
+    public async Task<ActionResult<ListingDto>> Cancel(int id, CloseListingWithNoteRequest request)
+    {
+        var userId = User.RequireUserId();
+        var listing = await db.Listings
+            .Include(l => l.Applications)
+            .FirstOrDefaultAsync(l => l.Id == id && l.OwnerId == userId);
+        if (listing is null)
+        {
+            return NotFound();
+        }
+
+        listing.Status = ListingStatus.Cancelled;
+        listing.OutcomeNote = request.Note.Trim();
+        listing.ClosedAt = DateTime.UtcNow;
+
+        foreach (var app in listing.Applications.Where(a => a.Status == ApplicationStatus.Accepted))
+        {
+            app.Status = ApplicationStatus.Cancelled;
+            app.RespondedAt ??= DateTime.UtcNow;
+        }
+
+        await db.SaveChangesAsync();
+        return await ReloadAsync(id, userId);
+    }
+
+    [Authorize]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {

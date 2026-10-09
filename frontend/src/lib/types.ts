@@ -1,8 +1,8 @@
 // Mirrors the DTOs in backend/CareerPath.Api/Dtos. Keep both sides in sync.
 
 export type CompetencyLevel = 'Learning' | 'Comfortable' | 'Strong'
-export type ListingStatus = 'Open' | 'Closed'
-export type ApplicationStatus = 'Pending' | 'Accepted' | 'Rejected' | 'Withdrawn'
+export type ListingStatus = 'Open' | 'Closed' | 'Completed' | 'Cancelled'
+export type ApplicationStatus = 'Pending' | 'Accepted' | 'Rejected' | 'Withdrawn' | 'Completed' | 'Cancelled'
 export type ApplicationOrigin = 'Applied' | 'Invited'
 export type MatchReasonKind = 'Strength' | 'Gap'
 
@@ -172,6 +172,7 @@ export interface Listing {
   hoursPerWeek: number
   timeline: string
   status: ListingStatus
+  outcomeNote: string | null
   createdAt: string
   applicationCount: number
   pendingCount: number
@@ -233,6 +234,7 @@ export interface Application {
   match: Match
   canDecide: boolean
   canWithdraw: boolean
+  canCancel: boolean
   review: AiReview | null
   contact: Contact | null
 }
