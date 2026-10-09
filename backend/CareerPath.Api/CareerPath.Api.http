@@ -1,0 +1,65 @@
+@baseUrl = http://localhost:5080
+
+### Platform stats
+GET {{baseUrl}}/api/stats
+
+### All fields (IT is active, the rest are "coming soon")
+GET {{baseUrl}}/api/fields
+
+### IT field with its sub-field cards
+GET {{baseUrl}}/api/fields/it
+
+### Sub-field page: description, reality check, roadmap, communities
+GET {{baseUrl}}/api/subfields/game-development
+
+### People on a path
+GET {{baseUrl}}/api/subfields/game-development/people
+
+### Discussion topics of a path
+GET {{baseUrl}}/api/subfields/game-development/topics
+
+### Latest topics across all paths
+GET {{baseUrl}}/api/topics/recent?take=4
+
+### People directory with filters
+GET {{baseUrl}}/api/users?path=game-development&openOnly=true
+
+### Log in as the demo student (all demo accounts use the password demo1234)
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "demo@careerpath.dev",
+  "password": "demo1234"
+}
+
+###
+@token = {{login.response.body.$.token}}
+
+### Current user
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### Suggested collaborators for the current user
+GET {{baseUrl}}/api/users/suggestions
+Authorization: Bearer {{token}}
+
+### Collaboration inbox (incoming and outgoing)
+GET {{baseUrl}}/api/collaborations
+Authorization: Bearer {{token}}
+
+### Mark roadmap step 3 as done
+POST {{baseUrl}}/api/progress/3
+Authorization: Bearer {{token}}
+
+### Start a discussion topic
+POST {{baseUrl}}/api/subfields/game-development/topics
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Which game jam is best for a first-timer?",
+  "body": "I want to join my first jam next month. Any beginner-friendly ones?",
+  "kind": "Question"
+}
