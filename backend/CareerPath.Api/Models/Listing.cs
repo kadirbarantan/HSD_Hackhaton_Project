@@ -4,6 +4,8 @@ public enum ListingStatus
 {
     Open,
     Closed,
+    Completed,
+    Cancelled,
 }
 
 /// <summary>A project post looking for collaborators in areas the owner cannot cover alone.</summary>
@@ -30,6 +32,7 @@ public class Listing
 
     public string Timeline { get; set; } = "";
     public ListingStatus Status { get; set; } = ListingStatus.Open;
+    public string? OutcomeNote { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ClosedAt { get; set; }
 

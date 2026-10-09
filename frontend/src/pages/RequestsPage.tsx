@@ -18,8 +18,9 @@ export function RequestsPage() {
 
   const toAnswer = applications.filter((item) => item.canDecide)
   const working = applications.filter((item) => item.status === 'Accepted')
+  const completed = applications.filter((item) => item.status === 'Completed')
   const waiting = applications.filter((item) => item.status === 'Pending' && !item.canDecide)
-  const closed = applications.filter((item) => item.status === 'Rejected' || item.status === 'Withdrawn')
+  const closed = applications.filter((item) => item.status === 'Rejected' || item.status === 'Withdrawn' || item.status === 'Cancelled')
 
   return (
     <div className="mx-auto max-w-4xl space-y-10">
@@ -66,13 +67,19 @@ export function RequestsPage() {
         ))}
       </Section>
 
+      <Section icon={<Handshake className="size-5 text-emerald-600" />} title="Completed together" items={completed}>
+        {completed.map((application) => (
+          <ApplicationCard key={application.id} application={application} onChange={update} />
+        ))}
+      </Section>
+
       <Section icon={<Send className="size-5 text-indigo-500" />} title="Waiting on them" items={waiting}>
         {waiting.map((application) => (
           <ApplicationCard key={application.id} application={application} onChange={update} />
         ))}
       </Section>
 
-      <Section icon={<Mailbox className="size-5 text-slate-400" />} title="Closed" items={closed}>
+      <Section icon={<Mailbox className="size-5 text-slate-400" />} title="Closed & Cancelled" items={closed}>
         {closed.map((application) => (
           <ApplicationCard key={application.id} application={application} onChange={update} />
         ))}

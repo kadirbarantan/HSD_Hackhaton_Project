@@ -6,6 +6,8 @@ public enum ApplicationStatus
     Accepted,
     Rejected,
     Withdrawn,
+    Completed,
+    Cancelled,
 }
 
 public enum ApplicationOrigin

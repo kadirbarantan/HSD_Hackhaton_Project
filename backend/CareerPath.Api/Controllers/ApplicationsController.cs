@@ -58,6 +58,27 @@ public class ApplicationsController(
         return listings.ToApplicationDto(application, userId);
     }
 
+    /// <summary>Cancels an active accepted collaboration (either by owner or applicant).</summary>
+    [HttpPost("{id:int}/cancel")]
+    public async Task<ActionResult<ApplicationDto>> Cancel(int id, CancelApplicationRequest? request)
+    {
+        var userId = User.RequireUserId();
+        var application = await Load(id);
+        if (application is null || (application.ApplicantId != userId && application.Listing.OwnerId != userId))
+        {
+            return NotFound();
+        }
+        if (application.Status != ApplicationStatus.Accepted)
+        {
+            return Problem(statusCode: StatusCodes.Status409Conflict, title: "Only accepted collaborations can be cancelled.");
+        }
+
+        application.Status = ApplicationStatus.Cancelled;
+        application.RespondedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        return listings.ToApplicationDto(application, userId);
+    }
+
     /// <summary>
     /// Writes a suitability report on the applicant for the listing owner. Uses a language model
     /// when one is configured, and the built-in rule-based writer when it is not.

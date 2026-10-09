@@ -72,7 +72,7 @@ public class ProfileService(AppDbContext db, ListingService listings)
             .ToListAsync();
 
         var accepted = await db.Applications
-            .CountAsync(a => a.Status == ApplicationStatus.Accepted
+            .CountAsync(a => (a.Status == ApplicationStatus.Accepted || a.Status == ApplicationStatus.Completed)
                 && (a.ApplicantId == userId || a.Listing.OwnerId == userId));
 
         return new UserProfileDto(
@@ -110,7 +110,7 @@ public class ProfileService(AppDbContext db, ListingService listings)
             return true;
         }
 
-        return await db.Applications.AnyAsync(a => a.Status == ApplicationStatus.Accepted
+        return await db.Applications.AnyAsync(a => (a.Status == ApplicationStatus.Accepted || a.Status == ApplicationStatus.Completed)
             && ((a.ApplicantId == userId && a.Listing.OwnerId == viewerId)
                 || (a.ApplicantId == viewerId && a.Listing.OwnerId == userId)));
     }
