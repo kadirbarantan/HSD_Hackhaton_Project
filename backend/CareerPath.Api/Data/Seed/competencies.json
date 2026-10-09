@@ -1,0 +1,146 @@
+[
+  {
+    "slug": "frontend",
+    "name": "Frontend development",
+    "category": "Engineering",
+    "icon": "LayoutDashboard",
+    "description": "Turning a design into a working interface people can click.",
+    "keywords": ["react", "vue", "angular", "svelte", "typescript", "javascript", "html", "css", "tailwind", "nextjs", "vite", "frontend"]
+  },
+  {
+    "slug": "backend",
+    "name": "Backend development",
+    "category": "Engineering",
+    "icon": "Server",
+    "description": "APIs, databases and the logic behind the screen.",
+    "keywords": ["c#", ".net", "aspnetcore", "node", "express", "django", "flask", "spring", "java", "python", "go", "php", "laravel", "postgresql", "mysql", "mongodb", "sql", "rest", "graphql", "api", "backend"]
+  },
+  {
+    "slug": "mobile",
+    "name": "Mobile development",
+    "category": "Engineering",
+    "icon": "Smartphone",
+    "description": "Apps that ship to the App Store or Google Play.",
+    "keywords": ["kotlin", "swift", "flutter", "dart", "reactnative", "android", "ios", "jetpackcompose", "firebase", "mobile"]
+  },
+  {
+    "slug": "gamedev",
+    "name": "Game development",
+    "category": "Engineering",
+    "icon": "Gamepad2",
+    "description": "Gameplay, engines and everything that makes a game run.",
+    "keywords": ["unity", "unreal", "godot", "c#", "c++", "gamedev", "phaser", "love2d", "shader", "game"]
+  },
+  {
+    "slug": "devops",
+    "name": "DevOps and cloud",
+    "category": "Engineering",
+    "icon": "Cloud",
+    "description": "Getting the project deployed, monitored and repeatable.",
+    "keywords": ["docker", "kubernetes", "terraform", "aws", "azure", "gcp", "cicd", "githubactions", "nginx", "linux", "devops"]
+  },
+  {
+    "slug": "qa",
+    "name": "Testing and QA",
+    "category": "Engineering",
+    "icon": "Bug",
+    "description": "Finding what breaks before your users do.",
+    "keywords": ["jest", "vitest", "playwright", "cypress", "selenium", "pytest", "xunit", "testing", "qa"]
+  },
+  {
+    "slug": "embedded",
+    "name": "Embedded and IoT",
+    "category": "Engineering",
+    "icon": "Cpu",
+    "description": "Code that runs on hardware instead of a server.",
+    "keywords": ["arduino", "raspberrypi", "esp32", "c", "rust", "embedded", "iot", "micropython", "firmware"]
+  },
+  {
+    "slug": "security",
+    "name": "Cybersecurity",
+    "category": "Engineering",
+    "icon": "ShieldCheck",
+    "description": "Keeping the project and its users safe.",
+    "keywords": ["security", "pentest", "ctf", "cryptography", "owasp", "wireshark", "burpsuite", "nmap", "infosec"]
+  },
+  {
+    "slug": "uiux",
+    "name": "UI and UX design",
+    "category": "Design",
+    "icon": "PenTool",
+    "description": "Deciding how the product looks and how it should feel to use.",
+    "keywords": ["figma", "uidesign", "uxdesign", "prototyping", "wireframe", "accessibility", "designsystem", "ui", "ux"]
+  },
+  {
+    "slug": "graphics",
+    "name": "Graphic design and illustration",
+    "category": "Design",
+    "icon": "Palette",
+    "description": "Logos, illustration, pixel art and everything visual.",
+    "keywords": ["illustrator", "photoshop", "pixelart", "aseprite", "branding", "logo", "inkscape", "illustration", "art"]
+  },
+  {
+    "slug": "art3d",
+    "name": "3D and animation",
+    "category": "Design",
+    "icon": "Box",
+    "description": "Models, rigs and motion.",
+    "keywords": ["blender", "maya", "3d", "animation", "substancepainter", "modeling", "lowpoly"]
+  },
+  {
+    "slug": "audio",
+    "name": "Sound and music",
+    "category": "Design",
+    "icon": "Music",
+    "description": "Soundtrack, effects and mixing.",
+    "keywords": ["audio", "sounddesign", "music", "fmod", "wwise", "ableton", "soundtrack"]
+  },
+  {
+    "slug": "dataanalysis",
+    "name": "Data analysis",
+    "category": "Data and AI",
+    "icon": "ChartColumn",
+    "description": "Cleaning real data and finding what it actually says.",
+    "keywords": ["pandas", "numpy", "sql", "r", "excel", "tableau", "powerbi", "matplotlib", "dataviz", "jupyter", "statistics"]
+  },
+  {
+    "slug": "ml",
+    "name": "Machine learning",
+    "category": "Data and AI",
+    "icon": "BrainCircuit",
+    "description": "Training, evaluating and shipping models.",
+    "keywords": ["pytorch", "tensorflow", "scikitlearn", "keras", "nlp", "computervision", "machinelearning", "deeplearning", "llm", "huggingface"]
+  },
+  {
+    "slug": "dataeng",
+    "name": "Data engineering",
+    "category": "Data and AI",
+    "icon": "Database",
+    "description": "Pipelines that move data reliably.",
+    "keywords": ["airflow", "spark", "etl", "kafka", "dbt", "warehouse", "bigquery", "pipeline"]
+  },
+  {
+    "slug": "product",
+    "name": "Product and project management",
+    "category": "Product",
+    "icon": "ClipboardList",
+    "description": "Deciding what to build next and keeping the team on track.",
+    "keywords": ["scrum", "agile", "roadmap", "jira", "notion", "productmanagement", "planning"]
+  },
+  {
+    "slug": "writing",
+    "name": "Technical writing",
+    "category": "Product",
+    "icon": "FileText",
+    "description": "Documentation, tutorials and release notes people can follow.",
+    "keywords": ["documentation", "markdown", "technicalwriting", "docs", "tutorial", "readme"]
+  },
+  {
+    "slug": "growth",
+    "name": "Marketing and growth",
+    "category": "Product",
+    "icon": "Megaphone",
+    "description": "Getting the first hundred people to actually use it.",
+    "keywords": ["marketing", "seo", "socialmedia", "community", "analytics", "growth", "launch"]
+  }
+]

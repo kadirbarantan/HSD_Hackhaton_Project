@@ -1,5 +1,6 @@
-import { CircleAlert, LoaderCircle, type LucideIcon } from 'lucide-react'
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { CircleAlert, LoaderCircle, X, type LucideIcon } from 'lucide-react'
+import { useEffect, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, type LinkProps } from 'react-router'
 import { buttonClass, cn, type ButtonSize, type ButtonVariant } from '../lib/styles'
 
@@ -48,6 +49,21 @@ export function Badge({ tone = 'slate', className, children }: { tone?: BadgeTon
 
 export function Chip({ children }: { children: ReactNode }) {
   return <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{children}</span>
+}
+
+export function ProgressBar({ value, max, className, barClassName }: { value: number; max: number; className?: string; barClassName?: string }) {
+  const width = max === 0 ? 0 : Math.min(100, Math.round((value / max) * 100))
+  return (
+    <div
+      className={cn('h-2 w-full overflow-hidden rounded-full bg-slate-100', className)}
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={max}
+      aria-valuenow={value}
+    >
+      <div className={cn('h-full rounded-full bg-indigo-500 transition-all duration-500', barClassName)} style={{ width: `${width}%` }} />
+    </div>
+  )
 }
 
 export function Spinner({ className }: { className?: string }) {
@@ -106,5 +122,51 @@ export function FormError({ message }: { message: string | null }) {
       <CircleAlert className="size-4 shrink-0" />
       {message}
     </p>
+  )
+}
+
+interface DialogProps {
+  title: string
+  subtitle?: ReactNode
+  onClose: () => void
+  children: ReactNode
+}
+
+export function Dialog({ title, subtitle, onClose, children }: DialogProps) {
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [onClose])
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 py-10 backdrop-blur-sm" onClick={onClose}>
+      <div
+        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-lg rounded-2xl bg-white p-6 text-left shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+            {subtitle && <div className="mt-1 text-sm text-slate-600">{subtitle}</div>}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            aria-label="Close"
+          >
+            <X className="size-5" />
+          </button>
+        </div>
+        <div className="mt-4">{children}</div>
+      </div>
+    </div>,
+    document.body,
   )
 }

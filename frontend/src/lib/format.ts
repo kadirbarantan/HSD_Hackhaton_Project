@@ -1,3 +1,5 @@
+import type { ApplicationStatus, CompetencyLevel } from './types'
+
 const relativeTime = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
 
 const timeUnits: [Intl.RelativeTimeFormatUnit, number][] = [
@@ -31,6 +33,24 @@ export function initials(name: string): string {
     .toUpperCase()
 }
 
-export function percent(completed: number, total: number): number {
-  return total === 0 ? 0 : Math.round((completed / total) * 100)
+export function plural(count: number, singular: string, pluralForm = `${singular}s`): string {
+  return `${count} ${count === 1 ? singular : pluralForm}`
+}
+
+export const levelLabels: Record<CompetencyLevel, string> = {
+  Learning: 'Learning',
+  Comfortable: 'Comfortable',
+  Strong: 'Strong',
+}
+
+export const statusLabels: Record<ApplicationStatus, string> = {
+  Pending: 'Waiting for an answer',
+  Accepted: 'Accepted',
+  Rejected: 'Not this time',
+  Withdrawn: 'Withdrawn',
+}
+
+/** "Computer Engineering, year 2, Istanbul Technical University" */
+export function studies(user: { university: string | null; program: string | null; studyYear: number | null }): string {
+  return [user.program, user.studyYear ? `year ${user.studyYear}` : null, user.university].filter(Boolean).join(' · ')
 }

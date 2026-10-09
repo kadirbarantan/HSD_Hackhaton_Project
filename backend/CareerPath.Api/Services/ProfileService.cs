@@ -5,238 +5,113 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CareerPath.Api.Services;
 
-public class ProfileService(AppDbContext db)
+public class ProfileService(AppDbContext db, ListingService listings)
 {
-    public async Task<Dictionary<int, UserStats>> GetStatsAsync(IEnumerable<int> userIds)
-    {
-        var ids = userIds.Distinct().ToList();
+    /// <summary>Loads everything the match scorer and the profile page need in one query.</summary>
+    public IQueryable<User> UsersWithGraph() => db.Users
+        .Include(u => u.Competencies).ThenInclude(c => c.Competency)
+        .Include(u => u.Projects);
 
-        var steps = await db.RoadmapProgress
-            .Where(p => ids.Contains(p.UserId))
-            .GroupBy(p => p.UserId)
-            .Select(g => new { UserId = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.UserId, x => x.Count);
+    public static UserSummaryDto ToSummary(User user) => new(
+        user.Id,
+        user.DisplayName,
+        user.Headline,
+        user.Location,
+        user.University,
+        user.Program,
+        user.StudyYear,
+        user.Skills,
+        user.Competencies
+            .OrderByDescending(c => c.Level)
+            .ThenBy(c => c.Competency.SortOrder)
+            .Select(c => new UserCompetencyDto(
+                c.Competency.Slug,
+                c.Competency.Name,
+                c.Competency.Category,
+                c.Competency.Icon,
+                c.Level))
+            .ToList(),
+        user.OpenToJoin,
+        user.LookingForNote,
+        user.WeeklyHours,
+        user.GitHubUsername,
+        user.Projects.Count);
 
-        var topics = await db.Topics
-            .Where(t => ids.Contains(t.AuthorId))
-            .GroupBy(t => t.AuthorId)
-            .Select(g => new { UserId = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.UserId, x => x.Count);
+    public async Task<MeDto> GetMeAsync(User user) => new(
+        user.Id,
+        user.Email,
+        user.DisplayName,
+        user.OpenToJoin,
+        await db.UserCompetencies.CountAsync(c => c.UserId == user.Id),
+        await db.Listings.CountAsync(l => l.OwnerId == user.Id && l.Status == ListingStatus.Open),
+        await CountPendingDecisionsAsync(user.Id));
 
-        var replies = await db.Replies
-            .Where(r => ids.Contains(r.AuthorId))
-            .GroupBy(r => r.AuthorId)
-            .Select(g => new { UserId = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.UserId, x => x.Count);
-
-        var accepted = await db.CollaborationRequests
-            .Where(c => c.Status == CollaborationStatus.Accepted && (ids.Contains(c.SenderId) || ids.Contains(c.ReceiverId)))
-            .Select(c => new { c.SenderId, c.ReceiverId })
-            .ToListAsync();
-        var collaborations = accepted
-            .SelectMany(c => new[] { c.SenderId, c.ReceiverId })
-            .GroupBy(id => id)
-            .ToDictionary(g => g.Key, g => g.Count());
-
-        return ids.ToDictionary(id => id, id => new UserStats(
-            steps.GetValueOrDefault(id),
-            topics.GetValueOrDefault(id),
-            replies.GetValueOrDefault(id),
-            collaborations.GetValueOrDefault(id)));
-    }
-
-    public async Task<UserStats> GetStatsForUserAsync(int userId) => (await GetStatsAsync([userId]))[userId];
-
-    public Task<Dictionary<string, InterestDto>> GetPathLookupAsync() =>
-        db.SubFields.AsNoTracking()
-            .OrderBy(s => s.Field.SortOrder).ThenBy(s => s.SortOrder)
-            .Select(s => new InterestDto(s.Slug, s.Name, s.Field.Slug))
-            .ToDictionaryAsync(s => s.Slug);
-
-    /// <summary>Number of completed roadmap steps per (user, sub-field slug).</summary>
-    public async Task<Dictionary<(int UserId, string Slug), int>> GetPathProgressAsync()
-    {
-        var rows = await db.RoadmapProgress
-            .Select(p => new { p.UserId, p.RoadmapStep.SubField.Slug })
-            .GroupBy(p => new { p.UserId, p.Slug })
-            .Select(g => new { g.Key.UserId, g.Key.Slug, Count = g.Count() })
-            .ToListAsync();
-
-        return rows.ToDictionary(r => (r.UserId, r.Slug), r => r.Count);
-    }
-
-    /// <summary>
-    /// People on each path: users who joined it or completed at least one of its steps.
-    /// </summary>
-    public async Task<Dictionary<string, HashSet<int>>> GetLearnersByPathAsync()
-    {
-        var interests = await db.Users.AsNoTracking().Select(u => new { u.Id, u.InterestSlugs }).ToListAsync();
-        var progress = await db.RoadmapProgress
-            .Select(p => new { p.UserId, p.RoadmapStep.SubField.Slug })
-            .Distinct()
-            .ToListAsync();
-
-        var learners = new Dictionary<string, HashSet<int>>();
-        void Add(string slug, int userId)
-        {
-            if (!learners.TryGetValue(slug, out var set))
-            {
-                learners[slug] = set = [];
-            }
-            set.Add(userId);
-        }
-
-        foreach (var user in interests)
-        {
-            foreach (var slug in user.InterestSlugs)
-            {
-                Add(slug, user.Id);
-            }
-        }
-        foreach (var row in progress)
-        {
-            Add(row.Slug, row.UserId);
-        }
-
-        return learners;
-    }
-
-    public static UserSummaryDto ToSummary(User user, UserStats stats, IReadOnlyDictionary<string, InterestDto> paths)
-    {
-        var level = XpRules.LevelFor(stats.Xp);
-        return new UserSummaryDto(
-            user.Id,
-            user.DisplayName,
-            user.Headline,
-            user.Role,
-            user.ExpertTitle,
-            user.Location,
-            user.Skills,
-            user.InterestSlugs.Where(paths.ContainsKey).Select(slug => paths[slug]).ToList(),
-            user.OpenToCollaborate,
-            user.CollaborationNote,
-            stats.Xp,
-            level,
-            XpRules.TitleFor(level));
-    }
-
-    public async Task<List<UserSummaryDto>> ToSummariesAsync(IReadOnlyCollection<User> users)
-    {
-        if (users.Count == 0)
-        {
-            return [];
-        }
-
-        var stats = await GetStatsAsync(users.Select(u => u.Id));
-        var paths = await GetPathLookupAsync();
-        return users.Select(u => ToSummary(u, stats[u.Id], paths)).ToList();
-    }
-
-    public async Task<MeDto> GetMeAsync(User user)
-    {
-        var stats = await GetStatsForUserAsync(user.Id);
-        var level = XpRules.LevelFor(stats.Xp);
-        var pending = await db.CollaborationRequests
-            .CountAsync(c => c.ReceiverId == user.Id && c.Status == CollaborationStatus.Pending);
-
-        return new MeDto(
-            user.Id,
-            user.Email,
-            user.DisplayName,
-            user.Role,
-            user.ExpertTitle,
-            user.InterestSlugs,
-            stats.Xp,
-            level,
-            XpRules.TitleFor(level),
-            XpRules.XpPerLevel,
-            pending);
-    }
+    /// <summary>Requests this user has to answer: applications to their listings, plus invitations they received.</summary>
+    public Task<int> CountPendingDecisionsAsync(int userId) => db.Applications
+        .CountAsync(a => a.Status == ApplicationStatus.Pending
+            && (a.Origin == ApplicationOrigin.Applied
+                ? a.Listing.OwnerId == userId
+                : a.ApplicantId == userId));
 
     public async Task<UserProfileDto?> GetProfileAsync(int userId, int? viewerId)
     {
-        var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+        var user = await UsersWithGraph().AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
         if (user is null)
         {
             return null;
         }
 
-        var stats = await GetStatsForUserAsync(userId);
-        var paths = await GetPathLookupAsync();
+        var viewer = viewerId is null || viewerId == userId
+            ? null
+            : await UsersWithGraph().AsNoTracking().FirstOrDefaultAsync(u => u.Id == viewerId);
 
-        var completedByPath = await db.RoadmapProgress
-            .Where(p => p.UserId == userId)
-            .Select(p => p.RoadmapStep.SubField.Slug)
-            .GroupBy(slug => slug)
-            .Select(g => new { Slug = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.Slug, x => x.Count);
-
-        var totals = await db.SubFields
-            .OrderBy(s => s.Field.SortOrder).ThenBy(s => s.SortOrder)
-            .Select(s => new { s.Slug, Total = s.RoadmapSteps.Count })
+        var theirListings = await listings.WithGraph().AsNoTracking()
+            .Where(l => l.OwnerId == userId)
+            .OrderByDescending(l => l.Status == ListingStatus.Open)
+            .ThenByDescending(l => l.CreatedAt)
             .ToListAsync();
 
-        var followed = user.InterestSlugs.Concat(completedByPath.Keys).ToHashSet();
-        var pathProgress = totals
-            .Where(t => followed.Contains(t.Slug) && paths.ContainsKey(t.Slug))
-            .Select(t => new PathProgressDto(
-                t.Slug,
-                paths[t.Slug].Name,
-                paths[t.Slug].FieldSlug,
-                completedByPath.GetValueOrDefault(t.Slug),
-                t.Total))
-            .ToList();
-
-        var recentTopics = await db.Topics
-            .Where(t => t.AuthorId == userId)
-            .OrderByDescending(t => t.CreatedAt)
-            .Take(5)
-            .Select(t => new ProfileTopicDto(t.Id, t.Title, t.SubField.Name, t.CreatedAt, t.Replies.Count))
-            .ToListAsync();
-
-        var (connection, showContact) = await GetConnectionAsync(userId, viewerId);
+        var accepted = await db.Applications
+            .CountAsync(a => a.Status == ApplicationStatus.Accepted
+                && (a.ApplicantId == userId || a.Listing.OwnerId == userId));
 
         return new UserProfileDto(
-            ToSummary(user, stats, paths),
+            ToSummary(user),
             user.Bio,
-            user.GitHubUrl,
             user.LinkedInUrl,
+            user.PortfolioUrl,
             user.CreatedAt,
-            pathProgress,
-            recentTopics,
-            new ProfileStatsDto(stats.StepsCompleted, stats.Topics, stats.Replies, stats.Collaborations),
-            XpRules.XpPerLevel,
-            connection,
-            showContact ? new ContactDto(user.Email, user.ContactHandle) : null);
+            user.GitHubSyncedAt,
+            user.Projects
+                .OrderByDescending(p => p.Stars)
+                .ThenByDescending(p => p.PushedAt)
+                .Select(GitHubService.ToDto)
+                .ToList(),
+            theirListings.Select(l => listings.ToDto(l, viewer, viewerId)).ToList(),
+            new ProfileStatsDto(theirListings.Count, accepted, user.Projects.Count, user.Competencies.Count),
+            viewerId == userId,
+            await CanSeeContactAsync(userId, viewerId)
+                ? new ContactDto(user.Email, user.ContactHandle)
+                : null);
     }
 
-    private async Task<(ConnectionDto Connection, bool ShowContact)> GetConnectionAsync(int userId, int? viewerId)
+    /// <summary>
+    /// Contact details stay hidden until two people have actually agreed to work together,
+    /// which matters because many users here are under 18.
+    /// </summary>
+    public async Task<bool> CanSeeContactAsync(int userId, int? viewerId)
     {
         if (viewerId is null)
         {
-            return (new ConnectionDto(ConnectionState.None, null), false);
+            return false;
         }
         if (viewerId == userId)
         {
-            return (new ConnectionDto(ConnectionState.Self, null), true);
+            return true;
         }
 
-        var request = await db.CollaborationRequests.AsNoTracking()
-            .Where(c => c.Status != CollaborationStatus.Declined
-                && ((c.SenderId == viewerId && c.ReceiverId == userId) || (c.SenderId == userId && c.ReceiverId == viewerId)))
-            .OrderByDescending(c => c.CreatedAt)
-            .FirstOrDefaultAsync();
-
-        if (request is null)
-        {
-            return (new ConnectionDto(ConnectionState.None, null), false);
-        }
-        if (request.Status == CollaborationStatus.Accepted)
-        {
-            return (new ConnectionDto(ConnectionState.Connected, request.Id), true);
-        }
-
-        var state = request.SenderId == viewerId ? ConnectionState.Outgoing : ConnectionState.Incoming;
-        return (new ConnectionDto(state, request.Id), false);
+        return await db.Applications.AnyAsync(a => a.Status == ApplicationStatus.Accepted
+            && ((a.ApplicantId == userId && a.Listing.OwnerId == viewerId)
+                || (a.ApplicantId == viewerId && a.Listing.OwnerId == userId)));
     }
 }

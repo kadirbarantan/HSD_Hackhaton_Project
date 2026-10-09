@@ -30,7 +30,6 @@ public class TokenService(IOptions<JwtOptions> options)
             [
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Name, user.DisplayName),
-                new Claim("role", user.Role.ToString()),
             ]),
             Issuer = _jwt.Issuer,
             Audience = _jwt.Audience,

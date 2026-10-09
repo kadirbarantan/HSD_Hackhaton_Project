@@ -1,96 +1,61 @@
 // Mirrors the DTOs in backend/CareerPath.Api/Dtos. Keep both sides in sync.
 
-export type Role = 'Student' | 'Expert'
-export type CollaborationStatus = 'Pending' | 'Accepted' | 'Declined'
-export type ConnectionState = 'None' | 'Self' | 'Outgoing' | 'Incoming' | 'Connected'
+export type CompetencyLevel = 'Learning' | 'Comfortable' | 'Strong'
+export type ListingStatus = 'Open' | 'Closed'
+export type ApplicationStatus = 'Pending' | 'Accepted' | 'Rejected' | 'Withdrawn'
+export type ApplicationOrigin = 'Applied' | 'Invited'
+export type MatchReasonKind = 'Strength' | 'Gap'
 
-export interface Me {
-  id: number
-  email: string
-  displayName: string
-  role: Role
-  expertTitle: string | null
-  interestSlugs: string[]
-  xp: number
-  level: number
-  levelTitle: string
-  xpPerLevel: number
-  pendingRequests: number
-}
-
-export interface AuthResponse {
-  token: string
-  user: Me
-}
-
-export interface PlatformStats {
-  paths: number
-  roadmapSteps: number
-  members: number
-  experts: number
-  topics: number
-  collaborations: number
-}
-
-export interface SubFieldCard {
+export interface Competency {
   id: number
   slug: string
   name: string
+  category: string
   icon: string
-  tagline: string
-  entryDifficulty: number
-  timeToJobReady: string
-  stepCount: number
-  learnerCount: number
-  topicCount: number
-}
-
-export interface FieldDetail {
-  id: number
-  slug: string
-  name: string
   description: string
-  icon: string
-  isActive: boolean
-  subFields: SubFieldCard[]
 }
 
-export interface Interest {
+export interface UserCompetency {
   slug: string
   name: string
-  fieldSlug: string
+  category: string
+  icon: string
+  level: CompetencyLevel
+}
+
+export interface GitHubProject {
+  name: string
+  description: string | null
+  language: string | null
+  topics: string[]
+  stars: number
+  forks: number
+  url: string
+  pushedAt: string | null
 }
 
 export interface UserSummary {
   id: number
   displayName: string
   headline: string
-  role: Role
-  expertTitle: string | null
   location: string | null
+  university: string | null
+  program: string | null
+  studyYear: number | null
   skills: string[]
-  interests: Interest[]
-  openToCollaborate: boolean
-  collaborationNote: string
-  xp: number
-  level: number
-  levelTitle: string
+  competencies: UserCompetency[]
+  openToJoin: boolean
+  lookingForNote: string
+  weeklyHours: number
+  gitHubUsername: string | null
+  projectCount: number
 }
 
-export interface PathProgress {
-  slug: string
-  name: string
-  fieldSlug: string
-  completed: number
-  total: number
-}
-
-export interface ProfileTopic {
-  id: number
-  title: string
-  subFieldName: string
-  createdAt: string
-  replyCount: number
+export interface ProfileStats {
+  listings: number
+  collaborations: number
+  projects: number
+  competencies: number
 }
 
 export interface Contact {
@@ -101,15 +66,20 @@ export interface Contact {
 export interface UserProfile {
   user: UserSummary
   bio: string
-  gitHubUrl: string | null
   linkedInUrl: string | null
+  portfolioUrl: string | null
   joinedAt: string
-  paths: PathProgress[]
-  recentTopics: ProfileTopic[]
-  stats: { stepsCompleted: number; topics: number; replies: number; collaborations: number }
-  xpPerLevel: number
-  connection: { state: ConnectionState; requestId: number | null }
+  gitHubSyncedAt: string | null
+  projects: GitHubProject[]
+  listings: Listing[]
+  stats: ProfileStats
+  isSelf: boolean
   contact: Contact | null
+}
+
+export interface CompetencyChoice {
+  slug: string
+  level: CompetencyLevel
 }
 
 export interface UpdateProfileRequest {
@@ -117,30 +87,167 @@ export interface UpdateProfileRequest {
   headline: string
   bio: string
   location: string
+  university: string
+  program: string
+  studyYear: number | null
   skills: string[]
-  interestSlugs: string[]
-  openToCollaborate: boolean
-  collaborationNote: string
-  gitHubUrl: string
+  competencies: CompetencyChoice[]
+  weeklyHours: number
+  openToJoin: boolean
+  lookingForNote: string
+  gitHubUsername: string
   linkedInUrl: string
+  portfolioUrl: string
   contactHandle: string
+}
+
+export interface GitHubSyncResult {
+  success: boolean
+  error: string | null
+  username: string | null
+  importedCount: number
+  syncedAt: string | null
+  projects: GitHubProject[]
 }
 
 export interface Suggestion {
   user: UserSummary
-  matchLabel: string
-  reasons: string[]
+  listingId: number
+  listingTitle: string
+  match: Match
 }
 
-export interface Collaboration {
+export interface PlatformStats {
+  members: number
+  openListings: number
+  competencies: number
+  collaborations: number
+  projects: number
+}
+
+export interface MatchReason {
+  kind: MatchReasonKind
+  title: string
+  detail: string
+}
+
+export interface MatchPart {
+  name: string
+  score: number
+  max: number
+  detail: string
+}
+
+export interface Match {
+  score: number
+  label: string
+  parts: MatchPart[]
+  reasons: MatchReason[]
+}
+
+export interface ListingNeed {
+  slug: string
+  name: string
+  category: string
+  icon: string
+  isPrimary: boolean
+}
+
+export interface ViewerApplication {
   id: number
-  direction: 'Incoming' | 'Outgoing'
-  otherUser: UserSummary
+  origin: ApplicationOrigin
+  status: ApplicationStatus
+}
+
+export interface Listing {
+  id: number
+  title: string
+  summary: string
+  description: string
+  owner: UserSummary
+  needs: ListingNeed[]
+  stack: string[]
+  projectUrl: string | null
+  teamSize: number
+  hoursPerWeek: number
+  timeline: string
+  status: ListingStatus
+  createdAt: string
+  applicationCount: number
+  pendingCount: number
+  isOwner: boolean
+  match: Match | null
+  myApplication: ViewerApplication | null
+}
+
+export interface NeedRequest {
+  slug: string
+  isPrimary: boolean
+}
+
+export interface SaveListingRequest {
+  title: string
+  summary: string
+  description: string
+  needs: NeedRequest[]
+  stack: string[]
+  projectUrl: string
+  teamSize: number
+  hoursPerWeek: number
+  timeline: string
+}
+
+export interface ReviewPoint {
+  title: string
+  detail: string
+}
+
+export interface AiReviewContent {
+  verdict: string
+  summary: string
+  strengths: ReviewPoint[]
+  risks: ReviewPoint[]
+  questions: string[]
+  suggestedFirstTask: string
+}
+
+export interface AiReview {
+  content: AiReviewContent
+  source: string
+  isAi: boolean
+  matchScore: number
+  createdAt: string
+}
+
+export interface Application {
+  id: number
+  listingId: number
+  listingTitle: string
+  applicant: UserSummary
+  owner: UserSummary
+  origin: ApplicationOrigin
   message: string
-  subFieldSlug: string | null
-  subFieldName: string | null
-  status: CollaborationStatus
+  status: ApplicationStatus
   createdAt: string
   respondedAt: string | null
+  match: Match
+  canDecide: boolean
+  canWithdraw: boolean
+  review: AiReview | null
   contact: Contact | null
+}
+
+export interface Me {
+  id: number
+  email: string
+  displayName: string
+  openToJoin: boolean
+  competencyCount: number
+  openListings: number
+  pendingDecisions: number
+}
+
+export interface AuthResponse {
+  token: string
+  user: Me
 }

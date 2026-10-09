@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using CareerPath.Api.Models;
 
 namespace CareerPath.Api.Dtos;
 
@@ -12,17 +11,14 @@ public record LoginRequest(
     [Required] string Email,
     [Required] string Password);
 
+/// <param name="PendingDecisions">Requests waiting for this user's answer, across their listings and their invitations.</param>
 public record MeDto(
     int Id,
     string Email,
     string DisplayName,
-    UserRole Role,
-    string? ExpertTitle,
-    List<string> InterestSlugs,
-    int Xp,
-    int Level,
-    string LevelTitle,
-    int XpPerLevel,
-    int PendingRequests);
+    bool OpenToJoin,
+    int CompetencyCount,
+    int OpenListings,
+    int PendingDecisions);
 
 public record AuthResponse(string Token, MeDto User);

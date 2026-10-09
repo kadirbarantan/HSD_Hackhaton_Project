@@ -14,7 +14,7 @@ React + TypeScript + Vite + Tailwind CSS. See the [main README](../README.md) fo
 
 - Data loading: `useApi<T>(path)` from `src/lib/useApi.ts` returns `{ data, error, loading, reload, mutate }` and refetches when the signed-in user changes.
 - Mutations: call `api<T>(path, { method, body })` from `src/lib/api.ts`, then update the cache with `mutate`. Errors come back as readable messages through `errorMessage(err)`.
-- Signed-in user: `useAuth()` gives `user`, `login`, `logout`, `refresh` and `updateUser`. Call `refresh()` after anything that changes XP or the pending request count.
+- Signed-in user: `useAuth()` gives `user`, `login`, `logout`, `refresh` and `updateUser`. Call `refresh()` after anything that changes the badge counts in the header.
 - Types in `src/lib/types.ts` mirror the backend DTOs. Change both together.
 - Styling: Tailwind classes, merged with `cn()` so a `className` passed to a component overrides its defaults. Buttons use `Button`/`ButtonLink` from `src/components/ui.tsx`.
 - Files that export components export only components (a lint rule), so hooks and helpers live in `src/lib`.
