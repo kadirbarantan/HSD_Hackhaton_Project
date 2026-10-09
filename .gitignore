@@ -15,6 +15,9 @@ node_modules/
 dist/
 *.local
 
+# Server output captured when running the apps in the background
+*.log
+
 # Editors and OS
 .vscode/*
 !.vscode/extensions.json

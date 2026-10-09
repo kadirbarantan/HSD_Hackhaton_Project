@@ -6,15 +6,14 @@ namespace CareerPath.Api.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public DbSet<Field> Fields => Set<Field>();
-    public DbSet<SubField> SubFields => Set<SubField>();
-    public DbSet<RoadmapStep> RoadmapSteps => Set<RoadmapStep>();
-    public DbSet<CommunityLink> CommunityLinks => Set<CommunityLink>();
     public DbSet<User> Users => Set<User>();
-    public DbSet<RoadmapProgress> RoadmapProgress => Set<RoadmapProgress>();
-    public DbSet<Topic> Topics => Set<Topic>();
-    public DbSet<Reply> Replies => Set<Reply>();
-    public DbSet<CollaborationRequest> CollaborationRequests => Set<CollaborationRequest>();
+    public DbSet<Competency> Competencies => Set<Competency>();
+    public DbSet<UserCompetency> UserCompetencies => Set<UserCompetency>();
+    public DbSet<GitHubProject> GitHubProjects => Set<GitHubProject>();
+    public DbSet<Listing> Listings => Set<Listing>();
+    public DbSet<ListingNeed> ListingNeeds => Set<ListingNeed>();
+    public DbSet<Application> Applications => Set<Application>();
+    public DbSet<AiReview> AiReviews => Set<AiReview>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -25,35 +24,47 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Field>().HasIndex(f => f.Slug).IsUnique();
+        modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
 
-        modelBuilder.Entity<SubField>().HasIndex(s => s.Slug).IsUnique();
+        modelBuilder.Entity<Competency>().HasIndex(c => c.Slug).IsUnique();
 
-        modelBuilder.Entity<RoadmapStep>().Property(s => s.Level).HasConversion<string>();
-
-        modelBuilder.Entity<User>(user =>
+        modelBuilder.Entity<UserCompetency>(entity =>
         {
-            user.HasIndex(u => u.Email).IsUnique();
-            user.Property(u => u.Role).HasConversion<string>();
+            entity.HasKey(c => new { c.UserId, c.CompetencyId });
+            entity.Property(c => c.Level).HasConversion<string>();
+            entity.HasOne(c => c.User).WithMany(u => u.Competencies).HasForeignKey(c => c.UserId);
+            entity.HasOne(c => c.Competency).WithMany().HasForeignKey(c => c.CompetencyId);
         });
 
-        modelBuilder.Entity<RoadmapProgress>().HasKey(p => new { p.UserId, p.RoadmapStepId });
+        modelBuilder.Entity<GitHubProject>()
+            .HasOne(p => p.User).WithMany(u => u.Projects).HasForeignKey(p => p.UserId);
 
-        modelBuilder.Entity<Topic>(topic =>
+        modelBuilder.Entity<Listing>(entity =>
         {
-            topic.Property(t => t.Kind).HasConversion<string>();
-            topic.HasOne(t => t.Author).WithMany().HasForeignKey(t => t.AuthorId).OnDelete(DeleteBehavior.Restrict);
+            entity.Property(l => l.Status).HasConversion<string>();
+            entity.HasOne(l => l.Owner).WithMany().HasForeignKey(l => l.OwnerId).OnDelete(DeleteBehavior.Restrict);
         });
 
-        modelBuilder.Entity<Reply>()
-            .HasOne(r => r.Author).WithMany().HasForeignKey(r => r.AuthorId).OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<CollaborationRequest>(request =>
+        modelBuilder.Entity<ListingNeed>(entity =>
         {
-            request.Property(c => c.Status).HasConversion<string>();
-            request.HasOne(c => c.Sender).WithMany().HasForeignKey(c => c.SenderId).OnDelete(DeleteBehavior.Restrict);
-            request.HasOne(c => c.Receiver).WithMany().HasForeignKey(c => c.ReceiverId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasKey(n => new { n.ListingId, n.CompetencyId });
+            entity.HasOne(n => n.Listing).WithMany(l => l.Needs).HasForeignKey(n => n.ListingId);
+            entity.HasOne(n => n.Competency).WithMany().HasForeignKey(n => n.CompetencyId);
         });
+
+        modelBuilder.Entity<Application>(entity =>
+        {
+            entity.Property(a => a.Status).HasConversion<string>();
+            entity.Property(a => a.Origin).HasConversion<string>();
+            entity.Ignore(a => a.DeciderId);
+            entity.Ignore(a => a.SenderId);
+            entity.HasIndex(a => new { a.ListingId, a.ApplicantId }).IsUnique();
+            entity.HasOne(a => a.Listing).WithMany(l => l.Applications).HasForeignKey(a => a.ListingId);
+            entity.HasOne(a => a.Applicant).WithMany().HasForeignKey(a => a.ApplicantId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<AiReview>()
+            .HasOne(r => r.Application).WithOne(a => a.Review).HasForeignKey<AiReview>(r => r.ApplicationId);
     }
 }
 

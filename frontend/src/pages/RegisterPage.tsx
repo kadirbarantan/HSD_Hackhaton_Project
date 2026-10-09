@@ -32,7 +32,7 @@ export function RegisterPage() {
   }
 
   return (
-    <AuthShell title="Create your free account" subtitle="Explore careers, track your progress and find teammates.">
+    <AuthShell title="Create your free account" subtitle="Say what you can do, and find the people who cover the rest.">
       <form onSubmit={submit} className="space-y-4">
         <div>
           <label htmlFor="displayName" className="label">

@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Data\Seed\catalog.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Update="Data\Seed\competencies.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -3,66 +3,85 @@ using CareerPath.Api.Models;
 
 namespace CareerPath.Api.Dtos;
 
-public record InterestDto(string Slug, string Name, string FieldSlug);
+public record CompetencyDto(int Id, string Slug, string Name, string Category, string Icon, string Description);
+
+public record UserCompetencyDto(string Slug, string Name, string Category, string Icon, CompetencyLevel Level);
+
+public record GitHubProjectDto(
+    string Name,
+    string? Description,
+    string? Language,
+    List<string> Topics,
+    int Stars,
+    int Forks,
+    string Url,
+    DateTime? PushedAt);
 
 public record UserSummaryDto(
     int Id,
     string DisplayName,
     string Headline,
-    UserRole Role,
-    string? ExpertTitle,
     string? Location,
+    string? University,
+    string? Program,
+    int? StudyYear,
     List<string> Skills,
-    List<InterestDto> Interests,
-    bool OpenToCollaborate,
-    string CollaborationNote,
-    int Xp,
-    int Level,
-    string LevelTitle);
+    List<UserCompetencyDto> Competencies,
+    bool OpenToJoin,
+    string LookingForNote,
+    int WeeklyHours,
+    string? GitHubUsername,
+    int ProjectCount);
 
-public record PathProgressDto(string Slug, string Name, string FieldSlug, int Completed, int Total);
-
-public record ProfileTopicDto(int Id, string Title, string SubFieldName, DateTime CreatedAt, int ReplyCount);
-
-public record ProfileStatsDto(int StepsCompleted, int Topics, int Replies, int Collaborations);
-
-public enum ConnectionState
-{
-    None,
-    Self,
-    Outgoing,
-    Incoming,
-    Connected,
-}
-
-public record ConnectionDto(ConnectionState State, int? RequestId);
+public record ProfileStatsDto(int Listings, int Collaborations, int Projects, int Competencies);
 
 public record ContactDto(string Email, string? ContactHandle);
 
 public record UserProfileDto(
     UserSummaryDto User,
     string Bio,
-    string? GitHubUrl,
     string? LinkedInUrl,
+    string? PortfolioUrl,
     DateTime JoinedAt,
-    List<PathProgressDto> Paths,
-    List<ProfileTopicDto> RecentTopics,
+    DateTime? GitHubSyncedAt,
+    List<GitHubProjectDto> Projects,
+    List<ListingDto> Listings,
     ProfileStatsDto Stats,
-    int XpPerLevel,
-    ConnectionDto Connection,
+    bool IsSelf,
     ContactDto? Contact);
+
+public record CompetencyChoice(
+    [Required] string Slug,
+    CompetencyLevel Level);
 
 public record UpdateProfileRequest(
     [Required, StringLength(60, MinimumLength = 2)] string DisplayName,
     [StringLength(120)] string? Headline,
     [StringLength(1000)] string? Bio,
     [StringLength(60)] string? Location,
+    [StringLength(80)] string? University,
+    [StringLength(80)] string? Program,
+    [Range(1, 6)] int? StudyYear,
     List<string>? Skills,
-    List<string>? InterestSlugs,
-    bool OpenToCollaborate,
-    [StringLength(280)] string? CollaborationNote,
-    [StringLength(200)] string? GitHubUrl,
+    List<CompetencyChoice>? Competencies,
+    [Range(0, 60)] int WeeklyHours,
+    bool OpenToJoin,
+    [StringLength(280)] string? LookingForNote,
+    [StringLength(39)] string? GitHubUsername,
     [StringLength(200)] string? LinkedInUrl,
+    [StringLength(200)] string? PortfolioUrl,
     [StringLength(80)] string? ContactHandle);
 
-public record SuggestionDto(UserSummaryDto User, string MatchLabel, List<string> Reasons);
+/// <summary>Result of importing public repositories from the GitHub REST API.</summary>
+public record GitHubSyncResultDto(
+    bool Success,
+    string? Error,
+    string? Username,
+    int ImportedCount,
+    DateTime? SyncedAt,
+    List<GitHubProjectDto> Projects);
+
+/// <summary>A person worth inviting to one of the viewer's own listings.</summary>
+public record SuggestionDto(UserSummaryDto User, int ListingId, string ListingTitle, MatchDto Match);
+
+public record PlatformStatsDto(int Members, int OpenListings, int Competencies, int Collaborations, int Projects);

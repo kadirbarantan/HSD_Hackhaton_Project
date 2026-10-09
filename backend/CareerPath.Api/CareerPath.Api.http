@@ -3,26 +3,17 @@
 ### Platform stats
 GET {{baseUrl}}/api/stats
 
-### All fields (IT is active, the rest are "coming soon")
-GET {{baseUrl}}/api/fields
+### The competency catalog every listing and profile is built from
+GET {{baseUrl}}/api/competencies
 
-### IT field with its sub-field cards
-GET {{baseUrl}}/api/fields/it
+### Open listings, newest first (sorted by match score once you are signed in)
+GET {{baseUrl}}/api/listings
 
-### Sub-field page: description, reality check, roadmap, communities
-GET {{baseUrl}}/api/subfields/game-development
-
-### People on a path
-GET {{baseUrl}}/api/subfields/game-development/people
-
-### Discussion topics of a path
-GET {{baseUrl}}/api/subfields/game-development/topics
-
-### Latest topics across all paths
-GET {{baseUrl}}/api/topics/recent?take=4
+### Listings that need a specific area
+GET {{baseUrl}}/api/listings?competency=graphics
 
 ### People directory with filters
-GET {{baseUrl}}/api/users?path=game-development&openOnly=true
+GET {{baseUrl}}/api/users?competency=gamedev&openOnly=true
 
 ### Log in as the demo student (all demo accounts use the password demo1234)
 # @name login
@@ -30,7 +21,7 @@ POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "demo@careerpath.dev",
+  "email": "demo@example.com",
   "password": "demo1234"
 }
 
@@ -41,25 +32,70 @@ Content-Type: application/json
 GET {{baseUrl}}/api/auth/me
 Authorization: Bearer {{token}}
 
-### Suggested collaborators for the current user
+### One listing, including your own match score and breakdown
+GET {{baseUrl}}/api/listings/1
+Authorization: Bearer {{token}}
+
+### Everyone who applied or was invited to your listing, best match first
+GET {{baseUrl}}/api/listings/1/applications
+Authorization: Bearer {{token}}
+
+### People worth inviting to your own open listings
 GET {{baseUrl}}/api/users/suggestions
 Authorization: Bearer {{token}}
 
-### Collaboration inbox (incoming and outgoing)
-GET {{baseUrl}}/api/collaborations
+### Your requests inbox, both directions
+GET {{baseUrl}}/api/applications
 Authorization: Bearer {{token}}
 
-### Mark roadmap step 3 as done
-POST {{baseUrl}}/api/progress/3
+### Write the suitability report for an applicant (owner only).
+### Uses the configured model, or the built-in rule-based writer when there is no API key.
+POST {{baseUrl}}/api/applications/1/review
 Authorization: Bearer {{token}}
 
-### Start a discussion topic
-POST {{baseUrl}}/api/subfields/game-development/topics
+### Accept a request. Contact details are revealed to both sides afterwards.
+POST {{baseUrl}}/api/applications/1/accept
+Authorization: Bearer {{token}}
+
+### Import your public repositories from GitHub
+POST {{baseUrl}}/api/users/me/github
+Authorization: Bearer {{token}}
+
+### Post a listing
+POST {{baseUrl}}/api/listings
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "title": "Which game jam is best for a first-timer?",
-  "body": "I want to join my first jam next month. Any beginner-friendly ones?",
-  "kind": "Question"
+  "title": "Study timer that syncs with the course schedule",
+  "summary": "The API is done. I need someone to design and build the interface.",
+  "description": "ASP.NET Core back end with accounts and a schedule importer. There is no front end at all yet.",
+  "needs": [
+    { "slug": "frontend", "isPrimary": true },
+    { "slug": "uiux", "isPrimary": false }
+  ],
+  "stack": ["React", "TypeScript", "ASP.NET Core"],
+  "projectUrl": "",
+  "teamSize": 1,
+  "hoursPerWeek": 8,
+  "timeline": "6 weeks"
+}
+
+### Apply to someone else's listing
+POST {{baseUrl}}/api/listings/2/apply
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "message": "I have built the back end of a habit tracker before and this is the part I enjoy. I have 10 hours a week."
+}
+
+### Invite someone to one of your listings. They decide.
+POST {{baseUrl}}/api/listings/1/invite
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "userId": 13,
+  "message": "Your pixel art is exactly the style I had in mind for the jam. Would you like to join?"
 }

@@ -1,4 +1,3 @@
-import { BadgeCheck } from 'lucide-react'
 import { initials } from '../lib/format'
 import { cn } from '../lib/styles'
 
@@ -20,38 +19,25 @@ const sizes = {
   lg: 'size-20 text-2xl',
 }
 
-const badgeSizes = {
-  xs: 'size-3',
-  sm: 'size-3.5',
-  md: 'size-4',
-  lg: 'size-6',
-}
-
 interface AvatarProps {
   id: number
   name: string
   size?: keyof typeof sizes
-  expert?: boolean
+  className?: string
 }
 
-export function Avatar({ id, name, size = 'md', expert = false }: AvatarProps) {
+export function Avatar({ id, name, size = 'md', className }: AvatarProps) {
   return (
     <span
       className={cn(
-        'relative inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-white',
+        'inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-white',
         colors[id % colors.length],
         sizes[size],
-        expert && 'ring-2 ring-amber-400 ring-offset-2',
+        className,
       )}
       title={name}
     >
       {initials(name)}
-      {expert && (
-        <BadgeCheck
-          className={cn('absolute -right-1 -bottom-1 rounded-full bg-white text-amber-500', badgeSizes[size])}
-          aria-label="Verified expert"
-        />
-      )}
     </span>
   )
 }

@@ -1,10 +1,9 @@
-import { Compass, Handshake, LogOut, Sparkles, Users, type LucideIcon } from 'lucide-react'
+import { Handshake, Inbox, LogOut, Plus, Users, type LucideIcon } from 'lucide-react'
 import { useEffect, type ReactNode } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { useAuth } from '../auth/useAuth'
 import { cn } from '../lib/styles'
 import { Avatar } from './Avatar'
-import { ProgressBar } from './Meters'
 import { ButtonLink } from './ui'
 
 function NavItem({ to, icon: Icon, badge, children }: { to: string; icon: LucideIcon; badge?: number; children: ReactNode }) {
@@ -48,18 +47,21 @@ export function Layout() {
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:gap-6">
           <Link to="/" className="flex items-center gap-2 font-bold text-slate-900">
             <span className="flex size-8 items-center justify-center rounded-lg bg-linear-to-br from-indigo-600 to-fuchsia-600 text-white">
-              <Compass className="size-5" />
+              <Handshake className="size-5" />
             </span>
             <span className="hidden md:inline">Career Path</span>
           </Link>
 
           <nav className="flex items-center gap-1 text-sm">
+            <NavItem to="/listings" icon={Handshake}>
+              Listings
+            </NavItem>
             <NavItem to="/people" icon={Users}>
               People
             </NavItem>
             {user && (
-              <NavItem to="/collaborations" icon={Handshake} badge={user.pendingRequests}>
-                Collaborations
+              <NavItem to="/requests" icon={Inbox} badge={user.pendingDecisions}>
+                Requests
               </NavItem>
             )}
           </nav>
@@ -67,24 +69,12 @@ export function Layout() {
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
             {ready && user && (
               <>
-                {user.role === 'Student' && (
-                  <Link
-                    to={`/people/${user.id}`}
-                    className="hidden w-40 rounded-lg px-2 py-1 hover:bg-slate-100 lg:block"
-                    title={`${user.xp} XP`}
-                  >
-                    <span className="flex items-center justify-between text-xs font-semibold text-indigo-700">
-                      <span className="flex items-center gap-1">
-                        <Sparkles className="size-3.5" />
-                        Lv {user.level} · {user.levelTitle}
-                      </span>
-                      <span className="text-slate-500">{user.xp} XP</span>
-                    </span>
-                    <ProgressBar value={user.xp % user.xpPerLevel} max={user.xpPerLevel} className="mt-1 h-1.5" />
-                  </Link>
-                )}
+                <ButtonLink to="/listings/new" size="sm" className="hidden sm:inline-flex">
+                  <Plus className="size-4" />
+                  Post a listing
+                </ButtonLink>
                 <Link to={`/people/${user.id}`} aria-label="Your profile">
-                  <Avatar id={user.id} name={user.displayName} size="sm" expert={user.role === 'Expert'} />
+                  <Avatar id={user.id} name={user.displayName} size="sm" />
                 </Link>
                 <button
                   type="button"
@@ -121,8 +111,8 @@ export function Layout() {
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-6 text-sm text-slate-500">
           <p className="flex items-center gap-2">
-            <Compass className="size-4 text-indigo-600" />
-            Career Path: explore, learn and build together.
+            <Handshake className="size-4 text-indigo-600" />
+            Career Path: find the people who cover what you cannot.
           </p>
           <p>Education Hackathon 2026 · Personal and Learning Development</p>
         </div>

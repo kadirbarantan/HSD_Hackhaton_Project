@@ -36,7 +36,7 @@ export function LoginPage() {
   }
 
   return (
-    <AuthShell title="Welcome back" subtitle="Log in to continue your path.">
+    <AuthShell title="Welcome back" subtitle="Log in to see who wants to work with you.">
       <form onSubmit={submit} className="space-y-4">
         <div>
           <label htmlFor="email" className="label">
@@ -79,7 +79,10 @@ export function LoginPage() {
           <Sparkles className="size-4" />
           Just looking around?
         </p>
-        <p className="mt-1 text-indigo-800">Use the demo student account. It already has progress, a pending request and more.</p>
+        <p className="mt-1 text-indigo-800">
+          Use the demo student account. It has a listing of its own, people waiting for an answer and imported
+          repositories.
+        </p>
         <Button
           variant="secondary"
           size="sm"

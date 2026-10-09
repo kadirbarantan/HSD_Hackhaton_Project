@@ -2,14 +2,17 @@ import { BrowserRouter, Route, Routes } from 'react-router'
 import { AuthProvider } from './auth/AuthProvider'
 import { Layout } from './components/Layout'
 import { RequireAuth } from './components/RequireAuth'
-import { CollaborationsPage } from './pages/CollaborationsPage'
 import { EditProfilePage } from './pages/EditProfilePage'
 import { HomePage } from './pages/HomePage'
+import { ListingFormPage } from './pages/ListingFormPage'
+import { ListingPage } from './pages/ListingPage'
+import { ListingsPage } from './pages/ListingsPage'
 import { LoginPage } from './pages/LoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { PeoplePage } from './pages/PeoplePage'
 import { ProfilePage } from './pages/ProfilePage'
 import { RegisterPage } from './pages/RegisterPage'
+import { RequestsPage } from './pages/RequestsPage'
 
 export default function App() {
   return (
@@ -18,6 +21,24 @@ export default function App() {
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<HomePage />} />
+            <Route path="listings" element={<ListingsPage />} />
+            <Route
+              path="listings/new"
+              element={
+                <RequireAuth>
+                  <ListingFormPage />
+                </RequireAuth>
+              }
+            />
+            <Route path="listings/:listingId" element={<ListingPage />} />
+            <Route
+              path="listings/:listingId/edit"
+              element={
+                <RequireAuth>
+                  <ListingFormPage />
+                </RequireAuth>
+              }
+            />
             <Route path="people" element={<PeoplePage />} />
             <Route path="people/:userId" element={<ProfilePage />} />
             <Route
@@ -29,10 +50,10 @@ export default function App() {
               }
             />
             <Route
-              path="collaborations"
+              path="requests"
               element={
                 <RequireAuth>
-                  <CollaborationsPage />
+                  <RequestsPage />
                 </RequireAuth>
               }
             />
