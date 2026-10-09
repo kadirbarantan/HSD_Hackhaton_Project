@@ -15,8 +15,8 @@ namespace CareerPath.Api.Services;
 /// </summary>
 public class GitHubService(HttpClient http, AppDbContext db, ILogger<GitHubService> logger)
 {
-    /// <summary>GitHub allows 60 unauthenticated calls an hour, so keep one import to one call.</summary>
-    private const int MaxProjects = 12;
+    public const int MaxDisplayedProjects = 10;
+    public const int MaxImportedProjects = 50;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -55,12 +55,40 @@ public class GitHubService(HttpClient http, AppDbContext db, ILogger<GitHubServi
             return Failed(username, "Could not reach GitHub. Check your connection and try again.");
         }
 
-        var picked = repos
+        var existing = await db.GitHubProjects.Where(p => p.UserId == user.Id).ToListAsync(cancellationToken);
+        var previouslyDisplayed = existing
+            .Where(p => p.IsDisplayed && !p.IsPrivate)
+            .Select(p => p.Url)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var publicRepos = repos
             .Where(repo => !repo.Fork && !repo.Archived && !repo.Private)
             .OrderByDescending(repo => repo.StargazersCount)
             .ThenByDescending(repo => repo.PushedAt)
-            .Take(MaxProjects)
-            .Select(repo => new GitHubProject
+            .Take(MaxImportedProjects)
+            .ToList();
+
+        var displayedCount = 0;
+        var picked = new List<GitHubProject>();
+
+        foreach (var repo in publicRepos)
+        {
+            bool isDisplayed;
+            if (previouslyDisplayed.Count > 0)
+            {
+                isDisplayed = previouslyDisplayed.Contains(repo.HtmlUrl) && displayedCount < MaxDisplayedProjects;
+            }
+            else
+            {
+                isDisplayed = displayedCount < MaxDisplayedProjects;
+            }
+
+            if (isDisplayed)
+            {
+                displayedCount++;
+            }
+
+            picked.Add(new GitHubProject
             {
                 UserId = user.Id,
                 Name = repo.Name,
@@ -71,20 +99,22 @@ public class GitHubService(HttpClient http, AppDbContext db, ILogger<GitHubServi
                 Forks = repo.ForksCount,
                 Url = repo.HtmlUrl,
                 PushedAt = repo.PushedAt?.UtcDateTime,
-            })
-            .ToList();
+                IsDisplayed = isDisplayed,
+                IsPrivate = false,
+            });
+        }
 
-        var existing = await db.GitHubProjects.Where(p => p.UserId == user.Id).ToListAsync(cancellationToken);
         db.GitHubProjects.RemoveRange(existing);
         db.GitHubProjects.AddRange(picked);
         user.GitHubSyncedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(cancellationToken);
 
-        logger.LogInformation("Imported {Count} repositories for {Username}.", picked.Count, username);
+        logger.LogInformation("Imported {Count} repositories for {Username} ({Displayed} displayed).", picked.Count, username, displayedCount);
         return new GitHubSyncResultDto(true, null, username, picked.Count, user.GitHubSyncedAt, picked.Select(ToDto).ToList());
     }
 
     public static GitHubProjectDto ToDto(GitHubProject project) => new(
+        project.Id,
         project.Name,
         project.Description,
         project.Language,
@@ -92,7 +122,9 @@ public class GitHubService(HttpClient http, AppDbContext db, ILogger<GitHubServi
         project.Stars,
         project.Forks,
         project.Url,
-        project.PushedAt);
+        project.PushedAt,
+        project.IsDisplayed,
+        project.IsPrivate);
 
     private static GitHubSyncResultDto Failed(string? username, string error) =>
         new(false, error, username, 0, null, []);

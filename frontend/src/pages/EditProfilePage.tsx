@@ -1,10 +1,10 @@
-import { Check, CircleAlert, Download, Save, X } from 'lucide-react'
+import { Check, CircleAlert, Download, ExternalLink, GitFork, Save, Star, X } from 'lucide-react'
 import { useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { useAuth } from '../auth/useAuth'
 import { DynamicIcon } from '../components/DynamicIcon'
 import { GitHubIcon } from '../components/BrandIcons'
-import { Button, ButtonLink, Card, FormError, PageLoader } from '../components/ui'
+import { Badge, Button, ButtonLink, Card, FormError, PageLoader } from '../components/ui'
 import { api, errorMessage } from '../lib/api'
 import { levelLabels, timeAgo } from '../lib/format'
 import { cn, levelStyles } from '../lib/styles'
@@ -21,6 +21,7 @@ import { useCompetencies } from '../lib/useCompetencies'
 
 const MAX_COMPETENCIES = 8
 const MAX_SKILLS = 15
+const MAX_DISPLAYED_PROJECTS = 10
 const levels: CompetencyLevel[] = ['Learning', 'Comfortable', 'Strong']
 
 export function EditProfilePage() {
@@ -58,6 +59,11 @@ function Section({ title, description, children }: { title: string; description?
 
 function toRequest(profile: UserProfile): UpdateProfileRequest {
   const { user } = profile
+  const initialDisplayed = (profile.allProjects ?? profile.projects)
+    .filter((p) => !p.isPrivate && p.isDisplayed !== false)
+    .map((p) => p.name)
+    .slice(0, MAX_DISPLAYED_PROJECTS)
+
   return {
     displayName: user.displayName,
     headline: user.headline,
@@ -75,6 +81,7 @@ function toRequest(profile: UserProfile): UpdateProfileRequest {
     linkedInUrl: profile.linkedInUrl ?? '',
     portfolioUrl: profile.portfolioUrl ?? '',
     contactHandle: profile.contact?.contactHandle ?? '',
+    displayedProjects: initialDisplayed,
   }
 }
 
@@ -304,7 +311,23 @@ function ProfileForm({ profile, categories }: { profile: UserProfile; categories
         </div>
       </Section>
 
-      <GitHubSection profile={profile} form={form} onUsername={(value) => set('gitHubUsername', value)} />
+      <GitHubSection
+        profile={profile}
+        form={form}
+        onUsername={(value) => set('gitHubUsername', value)}
+        displayedProjects={form.displayedProjects ?? []}
+        onToggleProject={(name) => {
+          const current = form.displayedProjects ?? []
+          if (current.includes(name)) {
+            set('displayedProjects', current.filter((item) => item !== name))
+          } else if (current.length < MAX_DISPLAYED_PROJECTS) {
+            set('displayedProjects', [...current, name])
+          }
+        }}
+        onSetDisplayedProjects={(names) => {
+          set('displayedProjects', names.slice(0, MAX_DISPLAYED_PROJECTS))
+        }}
+      />
 
       <Section title="Availability" description="Owners see this, and it is part of the match score.">
         <div className="grid gap-4 sm:grid-cols-[1fr_2fr]">
@@ -474,15 +497,23 @@ function CompetencyRow({ competency, choice, disabled, onToggle, onLevel }: Comp
  * Imports public repositories through the GitHub API. The username is saved with the rest of the form,
  * but the import runs on its own so people can see what came back before committing to anything.
  */
+interface GitHubSectionProps {
+  profile: UserProfile
+  form: UpdateProfileRequest
+  onUsername: (value: string) => void
+  displayedProjects: string[]
+  onToggleProject: (name: string) => void
+  onSetDisplayedProjects: (names: string[]) => void
+}
+
 function GitHubSection({
   profile,
   form,
   onUsername,
-}: {
-  profile: UserProfile
-  form: UpdateProfileRequest
-  onUsername: (value: string) => void
-}) {
+  displayedProjects,
+  onToggleProject,
+  onSetDisplayedProjects,
+}: GitHubSectionProps) {
   const [result, setResult] = useState<GitHubSyncResult | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -490,23 +521,43 @@ function GitHubSection({
   const username = form.gitHubUsername
   const saved = profile.user.gitHubUsername ?? ''
   const changed = username.trim().toLowerCase() !== saved.toLowerCase()
-  const projects = result?.projects ?? profile.projects
+
+  // Strictly filter out private repositories; private repos must never be shown.
+  const rawProjects = result?.projects ?? profile.allProjects ?? profile.projects
+  const publicProjects = rawProjects.filter((project) => !project.isPrivate)
   const syncedAt = result?.syncedAt ?? profile.gitHubSyncedAt
 
   async function importRepos() {
     setBusy(true)
     setError(null)
     try {
-      // The import reads the username stored on the account, so save the whole form first.
       await api<UserProfile>('/users/me', { method: 'PUT', body: form })
       const synced = await api<GitHubSyncResult>('/users/me/github', { method: 'POST' })
       setResult(synced)
-      if (!synced.success) setError(synced.error)
+      if (synced.success) {
+        // Update displayed selection to the newly imported public projects (default up to 10)
+        const publicSynced = (synced.projects ?? []).filter((p) => !p.isPrivate)
+        const newlySelected = publicSynced
+          .filter((p) => p.isDisplayed !== false)
+          .map((p) => p.name)
+          .slice(0, MAX_DISPLAYED_PROJECTS)
+        onSetDisplayedProjects(newlySelected)
+      } else {
+        setError(synced.error)
+      }
     } catch (err) {
       setError(errorMessage(err))
     } finally {
       setBusy(false)
     }
+  }
+
+  function selectTop10() {
+    onSetDisplayedProjects(publicProjects.slice(0, MAX_DISPLAYED_PROJECTS).map((p) => p.name))
+  }
+
+  function clearAll() {
+    onSetDisplayedProjects([])
   }
 
   return (
@@ -549,21 +600,132 @@ function GitHubSection({
         <p className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
           <Check className="size-4 shrink-0" />
           Imported {result.importedCount} {result.importedCount === 1 ? 'repository' : 'repositories'} from{' '}
-          {result.username}.
+          {result.username}. Choose which ones to display on your profile below.
         </p>
       )}
 
-      {projects.length > 0 && !changed && (
-        <div>
-          <p className="text-sm text-slate-500">
-            {projects.length} repositories on your profile{syncedAt && `, last imported ${timeAgo(syncedAt)}`}.
-          </p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {projects.slice(0, 10).map((project) => (
-              <span key={project.url} className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
-                {project.name}
-              </span>
-            ))}
+      {publicProjects.length > 0 && !changed && (
+        <div className="space-y-4 pt-3 border-t border-slate-100">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-900">Featured projects on profile</h3>
+                <Badge
+                  tone={
+                    displayedProjects.length === MAX_DISPLAYED_PROJECTS
+                      ? 'indigo'
+                      : displayedProjects.length > 0
+                        ? 'emerald'
+                        : 'slate'
+                  }
+                >
+                  {displayedProjects.length} of {MAX_DISPLAYED_PROJECTS} displayed
+                </Badge>
+              </div>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Choose up to 10 public projects to feature on your profile. Private repositories are never shown.
+                {syncedAt && ` Last synced ${timeAgo(syncedAt)}.`}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {displayedProjects.length < MAX_DISPLAYED_PROJECTS && publicProjects.length > displayedProjects.length && (
+                <button
+                  type="button"
+                  onClick={selectTop10}
+                  className="text-xs font-medium text-indigo-600 hover:text-indigo-800 hover:underline"
+                >
+                  Select top {Math.min(MAX_DISPLAYED_PROJECTS, publicProjects.length)}
+                </button>
+              )}
+              {displayedProjects.length > 0 && (
+                <button
+                  type="button"
+                  onClick={clearAll}
+                  className="text-xs font-medium text-slate-500 hover:text-slate-700 hover:underline"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
+          </div>
+
+          {displayedProjects.length >= MAX_DISPLAYED_PROJECTS && (
+            <p className="rounded-lg bg-indigo-50/80 px-3 py-2 text-xs font-medium text-indigo-800 border border-indigo-200/60">
+              Maximum of 10 featured projects reached. Uncheck a project to select another.
+            </p>
+          )}
+
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            {publicProjects.map((project) => {
+              const isSelected = displayedProjects.includes(project.name)
+              const isDisabled = !isSelected && displayedProjects.length >= MAX_DISPLAYED_PROJECTS
+
+              return (
+                <div
+                  key={project.url}
+                  onClick={() => !isDisabled && onToggleProject(project.name)}
+                  className={cn(
+                    'group flex items-start gap-3 rounded-xl border p-3.5 transition text-left select-none',
+                    isSelected
+                      ? 'border-indigo-500 bg-indigo-50/50 ring-1 ring-indigo-500/30'
+                      : isDisabled
+                        ? 'border-slate-200 bg-slate-50/60 opacity-60 cursor-not-allowed'
+                        : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 cursor-pointer',
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    id={`repo-${project.name}`}
+                    checked={isSelected}
+                    disabled={isDisabled}
+                    onChange={() => !isDisabled && onToggleProject(project.name)}
+                    className="mt-1 size-4 rounded border-slate-300 accent-indigo-600 focus:ring-indigo-500 shrink-0 cursor-pointer disabled:cursor-not-allowed"
+                    aria-label={`Display ${project.name} on profile`}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="truncate text-sm font-semibold text-slate-900 group-hover:text-indigo-950">
+                        {project.name}
+                      </span>
+                      {project.language && (
+                        <span className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-700">
+                          {project.language}
+                        </span>
+                      )}
+                      <a
+                        href={project.url}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        onClick={(e) => e.stopPropagation()}
+                        className="ml-auto p-0.5 text-slate-400 hover:text-indigo-600 transition"
+                        title="Open on GitHub"
+                        aria-label={`Open ${project.name} on GitHub`}
+                      >
+                        <ExternalLink className="size-3.5" />
+                      </a>
+                    </div>
+                    {project.description && (
+                      <p className="mt-1 line-clamp-2 text-xs text-slate-600">{project.description}</p>
+                    )}
+                    <div className="mt-2 flex items-center gap-3 text-xs text-slate-500">
+                      {project.stars > 0 && (
+                        <span className="flex items-center gap-1 font-medium text-amber-700">
+                          <Star className="size-3.5 fill-amber-400 text-amber-500" />
+                          {project.stars}
+                        </span>
+                      )}
+                      {project.forks > 0 && (
+                        <span className="flex items-center gap-1">
+                          <GitFork className="size-3.5" />
+                          {project.forks}
+                        </span>
+                      )}
+                      {project.pushedAt && <span>Updated {timeAgo(project.pushedAt)}</span>}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
