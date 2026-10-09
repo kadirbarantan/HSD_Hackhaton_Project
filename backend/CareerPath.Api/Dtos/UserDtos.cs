@@ -8,6 +8,7 @@ public record CompetencyDto(int Id, string Slug, string Name, string Category, s
 public record UserCompetencyDto(string Slug, string Name, string Category, string Icon, CompetencyLevel Level);
 
 public record GitHubProjectDto(
+    int Id,
     string Name,
     string? Description,
     string? Language,
@@ -15,7 +16,9 @@ public record GitHubProjectDto(
     int Stars,
     int Forks,
     string Url,
-    DateTime? PushedAt);
+    DateTime? PushedAt,
+    bool IsDisplayed = true,
+    bool IsPrivate = false);
 
 public record UserSummaryDto(
     int Id,
@@ -48,7 +51,8 @@ public record UserProfileDto(
     List<ListingDto> Listings,
     ProfileStatsDto Stats,
     bool IsSelf,
-    ContactDto? Contact);
+    ContactDto? Contact,
+    List<GitHubProjectDto>? AllProjects = null);
 
 public record CompetencyChoice(
     [Required] string Slug,
@@ -70,7 +74,13 @@ public record UpdateProfileRequest(
     [StringLength(39)] string? GitHubUsername,
     [StringLength(200)] string? LinkedInUrl,
     [StringLength(200)] string? PortfolioUrl,
-    [StringLength(80)] string? ContactHandle);
+    [StringLength(80)] string? ContactHandle,
+    List<string>? DisplayedProjects = null,
+    List<int>? DisplayedProjectIds = null);
+
+public record UpdateDisplayedProjectsRequest(
+    List<string>? DisplayedProjects = null,
+    List<int>? DisplayedProjectIds = null);
 
 /// <summary>Result of importing public repositories from the GitHub REST API.</summary>
 public record GitHubSyncResultDto(

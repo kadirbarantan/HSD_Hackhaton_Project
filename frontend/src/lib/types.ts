@@ -24,6 +24,7 @@ export interface UserCompetency {
 }
 
 export interface GitHubProject {
+  id?: number
   name: string
   description: string | null
   language: string | null
@@ -32,6 +33,8 @@ export interface GitHubProject {
   forks: number
   url: string
   pushedAt: string | null
+  isDisplayed?: boolean
+  isPrivate?: boolean
 }
 
 export interface UserSummary {
@@ -75,6 +78,7 @@ export interface UserProfile {
   stats: ProfileStats
   isSelf: boolean
   contact: Contact | null
+  allProjects?: GitHubProject[]
 }
 
 export interface CompetencyChoice {
@@ -99,6 +103,8 @@ export interface UpdateProfileRequest {
   linkedInUrl: string
   portfolioUrl: string
   contactHandle: string
+  displayedProjects?: string[]
+  displayedProjectIds?: number[]
 }
 
 export interface GitHubSyncResult {

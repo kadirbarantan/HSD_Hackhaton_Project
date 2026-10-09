@@ -35,7 +35,7 @@ public class ProfileService(AppDbContext db, ListingService listings)
         user.LookingForNote,
         user.WeeklyHours,
         user.GitHubUsername,
-        user.Projects.Count);
+        user.Projects.Count(p => p.IsDisplayed && !p.IsPrivate));
 
     public async Task<MeDto> GetMeAsync(User user) => new(
         user.Id,
@@ -61,7 +61,8 @@ public class ProfileService(AppDbContext db, ListingService listings)
             return null;
         }
 
-        var viewer = viewerId is null || viewerId == userId
+        var isSelf = viewerId == userId;
+        var viewer = viewerId is null || isSelf
             ? null
             : await UsersWithGraph().AsNoTracking().FirstOrDefaultAsync(u => u.Id == viewerId);
 
@@ -75,6 +76,25 @@ public class ProfileService(AppDbContext db, ListingService listings)
             .CountAsync(a => a.Status == ApplicationStatus.Accepted
                 && (a.ApplicantId == userId || a.Listing.OwnerId == userId));
 
+        // Public repositories chosen by the user, strictly excluding private repos and capped at 10
+        var displayedProjects = user.Projects
+            .Where(p => p.IsDisplayed && !p.IsPrivate)
+            .OrderByDescending(p => p.Stars)
+            .ThenByDescending(p => p.PushedAt)
+            .Take(GitHubService.MaxDisplayedProjects)
+            .Select(GitHubService.ToDto)
+            .ToList();
+
+        // For the profile owner, also return all non-private repositories so they can choose which to display
+        var allProjects = isSelf
+            ? user.Projects
+                .Where(p => !p.IsPrivate)
+                .OrderByDescending(p => p.Stars)
+                .ThenByDescending(p => p.PushedAt)
+                .Select(GitHubService.ToDto)
+                .ToList()
+            : null;
+
         return new UserProfileDto(
             ToSummary(user),
             user.Bio,
@@ -82,17 +102,14 @@ public class ProfileService(AppDbContext db, ListingService listings)
             user.PortfolioUrl,
             user.CreatedAt,
             user.GitHubSyncedAt,
-            user.Projects
-                .OrderByDescending(p => p.Stars)
-                .ThenByDescending(p => p.PushedAt)
-                .Select(GitHubService.ToDto)
-                .ToList(),
+            displayedProjects,
             theirListings.Select(l => listings.ToDto(l, viewer, viewerId)).ToList(),
-            new ProfileStatsDto(theirListings.Count, accepted, user.Projects.Count, user.Competencies.Count),
-            viewerId == userId,
+            new ProfileStatsDto(theirListings.Count, accepted, displayedProjects.Count, user.Competencies.Count),
+            isSelf,
             await CanSeeContactAsync(userId, viewerId)
                 ? new ContactDto(user.Email, user.ContactHandle)
-                : null);
+                : null,
+            allProjects);
     }
 
     /// <summary>

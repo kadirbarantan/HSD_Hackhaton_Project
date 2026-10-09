@@ -31,6 +31,9 @@ public static class DbSeeder
 
         if (!await db.Database.EnsureCreatedAsync())
         {
+            // If the database already existed, ensure the new columns are present
+            try { await db.Database.ExecuteSqlRawAsync("ALTER TABLE GitHubProjects ADD COLUMN IsDisplayed INTEGER NOT NULL DEFAULT 1;"); } catch { }
+            try { await db.Database.ExecuteSqlRawAsync("ALTER TABLE GitHubProjects ADD COLUMN IsPrivate INTEGER NOT NULL DEFAULT 0;"); } catch { }
             return;
         }
 
@@ -84,7 +87,9 @@ public static class DbSeeder
             int stars,
             string description,
             string[] topics,
-            int pushedDaysAgo) => new()
+            int pushedDaysAgo,
+            bool isDisplayed = true,
+            bool isPrivate = false) => new()
             {
                 Name = name,
                 Description = description,
@@ -94,6 +99,8 @@ public static class DbSeeder
                 Forks = stars / 4,
                 Url = $"https://github.com/{owner}/{name}",
                 PushedAt = DateTime.UtcNow.AddDays(-pushedDaysAgo),
+                IsDisplayed = isDisplayed,
+                IsPrivate = isPrivate,
             };
 
         // ----------------------------------------------------------------- people
@@ -121,6 +128,8 @@ public static class DbSeeder
                 Repo("kaanerdem", "study-planner-api", "C#", 12, "Small ASP.NET Core API for planning study sessions.", ["aspnetcore", "api", "sqlite"], 6),
                 Repo("kaanerdem", "unity-platformer-prototype", "C#", 3, "Two-week Unity prototype from a university workshop.", ["unity", "gamedev"], 40),
                 Repo("kaanerdem", "sqlite-notes", "C#", 1, "Notes app I wrote to learn Entity Framework Core.", ["sqlite", "efcore"], 90),
+                Repo("kaanerdem", "algo-exercises", "C#", 5, "Algorithms and data structures practice problems in C#.", ["algorithms", "csharp"], 15, isDisplayed: false),
+                Repo("kaanerdem", "course-assignments-private", "C#", 0, "Private coursework homework repository.", ["coursework"], 2, isDisplayed: false, isPrivate: true),
             ]);
 
         var zeynep = AddUser(
