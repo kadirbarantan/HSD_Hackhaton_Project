@@ -10,13 +10,15 @@ import { AiReviewPanel } from './AiReviewPanel'
 import { Avatar } from './Avatar'
 import { CompetencyPill } from './CompetencyPill'
 import { MatchBreakdown, MatchRing } from './MatchScore'
-import { Badge, Button, Card, FormError, type BadgeTone } from './ui'
+import { Badge, Button, ButtonLink, Card, FormError, type BadgeTone } from './ui'
 
 const statusTones: Record<Application['status'], BadgeTone> = {
   Pending: 'amber',
   Accepted: 'emerald',
   Rejected: 'slate',
   Withdrawn: 'slate',
+  Completed: 'emerald',
+  Cancelled: 'rose',
 }
 
 interface ApplicationCardProps {
@@ -37,7 +39,7 @@ export function ApplicationCard({ application, onChange, showListing = true }: A
   const person = isOwner ? application.applicant : application.owner
   const tone = matchTone(application.match.score)
 
-  async function act(action: 'accept' | 'reject' | 'withdraw') {
+  async function act(action: 'accept' | 'reject' | 'withdraw' | 'cancel') {
     setBusy(true)
     setError(null)
     try {
@@ -145,12 +147,24 @@ export function ApplicationCard({ application, onChange, showListing = true }: A
 
       <FormError message={error} />
 
-      {(application.canDecide || application.canWithdraw) && (
+      {application.status === 'Accepted' && (
+        <div className="mt-4">
+          <ButtonLink to={`/roadmaps/${application.id}`} variant="secondary">Our roadmap</ButtonLink>
+        </div>
+      )}
+
+      {(application.canDecide || application.canWithdraw || application.canCancel) && (
         <div className="mt-4 flex justify-end gap-2">
           {application.canWithdraw && (
             <Button variant="ghost" size="sm" disabled={busy} onClick={() => void act('withdraw')}>
               <Send className="size-4" />
               Withdraw
+            </Button>
+          )}
+          {application.canCancel && (
+            <Button variant="danger" size="sm" disabled={busy} onClick={() => void act('cancel')}>
+              <X className="size-4" />
+              Cancel collaboration
             </Button>
           )}
           {application.canDecide && (

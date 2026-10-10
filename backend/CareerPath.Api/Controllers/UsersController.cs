@@ -148,8 +148,36 @@ public class UsersController(
             user.GitHubUsername = newUsername;
             user.GitHubSyncedAt = null;
         }
+        else if (request.DisplayedProjects is not null || request.DisplayedProjectIds is not null)
+        {
+            var requestedCount = (request.DisplayedProjects?.Count ?? 0) + (request.DisplayedProjectIds?.Count ?? 0);
+            if (requestedCount > GitHubService.MaxDisplayedProjects)
+            {
+                return BadRequest($"You can choose a maximum of {GitHubService.MaxDisplayedProjects} GitHub projects to display on your profile.");
+            }
+
+            await ApplyDisplayedProjectsAsync(userId, request.DisplayedProjects, request.DisplayedProjectIds);
+        }
 
         await ApplyCompetenciesAsync(user, request.Competencies);
+        await db.SaveChangesAsync();
+
+        return (await profiles.GetProfileAsync(userId, userId))!;
+    }
+
+    /// <summary>Choose which GitHub projects are displayed on the user's profile (max 10, private repos not allowed).</summary>
+    [Authorize]
+    [HttpPut("me/github/projects")]
+    public async Task<ActionResult<UserProfileDto>> UpdateDisplayedProjects(UpdateDisplayedProjectsRequest request)
+    {
+        var userId = User.RequireUserId();
+        var requestedCount = (request.DisplayedProjects?.Count ?? 0) + (request.DisplayedProjectIds?.Count ?? 0);
+        if (requestedCount > GitHubService.MaxDisplayedProjects)
+        {
+            return BadRequest($"You can choose a maximum of {GitHubService.MaxDisplayedProjects} GitHub projects to display on your profile.");
+        }
+
+        await ApplyDisplayedProjectsAsync(userId, request.DisplayedProjects, request.DisplayedProjectIds);
         await db.SaveChangesAsync();
 
         return (await profiles.GetProfileAsync(userId, userId))!;
@@ -162,6 +190,27 @@ public class UsersController(
     {
         var user = await db.Users.FindAsync([User.RequireUserId()], cancellationToken);
         return user is null ? Unauthorized() : await gitHub.SyncAsync(user, cancellationToken);
+    }
+
+    private async Task ApplyDisplayedProjectsAsync(int userId, List<string>? displayedProjects, List<int>? displayedProjectIds)
+    {
+        var userProjects = await db.GitHubProjects.Where(p => p.UserId == userId).ToListAsync();
+        var chosenNamesOrUrls = (displayedProjects ?? [])
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var chosenIds = (displayedProjectIds ?? []).ToHashSet();
+
+        // Private repositories MUST NOT be shown/displayed.
+        // Limit displayed projects to a maximum of 10.
+        var allowed = userProjects
+            .Where(p => !p.IsPrivate && (chosenIds.Contains(p.Id) || chosenNamesOrUrls.Contains(p.Name) || chosenNamesOrUrls.Contains(p.Url)))
+            .Take(GitHubService.MaxDisplayedProjects)
+            .ToHashSet();
+
+        foreach (var proj in userProjects)
+        {
+            proj.IsDisplayed = !proj.IsPrivate && allowed.Contains(proj);
+        }
     }
 
     private async Task ApplyCompetenciesAsync(User user, List<CompetencyChoice>? choices)

@@ -14,6 +14,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ListingNeed> ListingNeeds => Set<ListingNeed>();
     public DbSet<Application> Applications => Set<Application>();
     public DbSet<AiReview> AiReviews => Set<AiReview>();
+    public DbSet<Roadmap> Roadmaps => Set<Roadmap>();
+    public DbSet<RoadmapProgress> RoadmapProgress => Set<RoadmapProgress>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -65,6 +67,20 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<AiReview>()
             .HasOne(r => r.Application).WithOne(a => a.Review).HasForeignKey<AiReview>(r => r.ApplicationId);
+
+        modelBuilder.Entity<Roadmap>(entity =>
+        {
+            entity.HasIndex(r => r.ApplicationId).IsUnique();
+            entity.HasOne(r => r.Application).WithOne().HasForeignKey<Roadmap>(r => r.ApplicationId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<RoadmapProgress>(entity =>
+        {
+            entity.HasKey(p => new { p.RoadmapId, p.MilestoneIndex, p.UserId });
+            entity.HasOne(p => p.Roadmap).WithMany(r => r.Progress).HasForeignKey(p => p.RoadmapId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<User>().WithMany().HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
     }
 }
 

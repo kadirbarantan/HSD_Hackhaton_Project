@@ -18,4 +18,6 @@ public class GitHubProject
     public int Forks { get; set; }
     public required string Url { get; set; }
     public DateTime? PushedAt { get; set; }
+    public bool IsDisplayed { get; set; } = true;
+    public bool IsPrivate { get; set; } = false;
 }

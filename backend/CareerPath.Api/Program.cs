@@ -69,7 +69,7 @@ builder.Services.AddHttpClient<GitHubService>(client =>
     }
 });
 
-builder.Services.AddHttpClient<AiReviewService>((provider, client) =>
+void ConfigureAiClient(IServiceProvider provider, HttpClient client)
 {
     var ai = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<AiOptions>>().Value;
     client.BaseAddress = new Uri(ai.BaseUrl.EndsWith('/') ? ai.BaseUrl : ai.BaseUrl + "/");
@@ -78,7 +78,9 @@ builder.Services.AddHttpClient<AiReviewService>((provider, client) =>
     {
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {ai.ApiKey}");
     }
-});
+}
+builder.Services.AddHttpClient<AiReviewService>(ConfigureAiClient);
+builder.Services.AddHttpClient<RoadmapService>(ConfigureAiClient);
 
 var app = builder.Build();
 

@@ -1,8 +1,8 @@
 // Mirrors the DTOs in backend/CareerPath.Api/Dtos. Keep both sides in sync.
 
 export type CompetencyLevel = 'Learning' | 'Comfortable' | 'Strong'
-export type ListingStatus = 'Open' | 'Closed'
-export type ApplicationStatus = 'Pending' | 'Accepted' | 'Rejected' | 'Withdrawn'
+export type ListingStatus = 'Open' | 'Closed' | 'Completed' | 'Cancelled'
+export type ApplicationStatus = 'Pending' | 'Accepted' | 'Rejected' | 'Withdrawn' | 'Completed' | 'Cancelled'
 export type ApplicationOrigin = 'Applied' | 'Invited'
 export type MatchReasonKind = 'Strength' | 'Gap'
 
@@ -24,6 +24,7 @@ export interface UserCompetency {
 }
 
 export interface GitHubProject {
+  id?: number
   name: string
   description: string | null
   language: string | null
@@ -32,6 +33,8 @@ export interface GitHubProject {
   forks: number
   url: string
   pushedAt: string | null
+  isDisplayed?: boolean
+  isPrivate?: boolean
 }
 
 export interface UserSummary {
@@ -75,6 +78,7 @@ export interface UserProfile {
   stats: ProfileStats
   isSelf: boolean
   contact: Contact | null
+  allProjects?: GitHubProject[]
 }
 
 export interface CompetencyChoice {
@@ -99,6 +103,8 @@ export interface UpdateProfileRequest {
   linkedInUrl: string
   portfolioUrl: string
   contactHandle: string
+  displayedProjects?: string[]
+  displayedProjectIds?: number[]
 }
 
 export interface GitHubSyncResult {
@@ -172,6 +178,7 @@ export interface Listing {
   hoursPerWeek: number
   timeline: string
   status: ListingStatus
+  outcomeNote: string | null
   createdAt: string
   applicationCount: number
   pendingCount: number
@@ -233,6 +240,7 @@ export interface Application {
   match: Match
   canDecide: boolean
   canWithdraw: boolean
+  canCancel: boolean
   review: AiReview | null
   contact: Contact | null
 }
@@ -250,4 +258,36 @@ export interface Me {
 export interface AuthResponse {
   token: string
   user: Me
+}
+
+export interface RoadmapTask {
+  userId: number
+  title: string
+  skillToPractice: string
+  deliverable: string
+  estimatedHours: number
+}
+
+export interface RoadmapMilestone {
+  title: string
+  outcome: string
+  coordination: string
+  tasks: RoadmapTask[]
+}
+
+export interface Roadmap {
+  id: number
+  content: { summary: string; gaps: string[]; milestones: RoadmapMilestone[] }
+  source: string
+  isAi: boolean
+  createdAt: string
+  progress: { milestoneIndex: number; userId: number; completed: boolean }[]
+}
+
+export interface RoadmapPageData {
+  applicationId: number
+  listingId: number
+  listingTitle: string
+  students: UserSummary[]
+  roadmap: Roadmap | null
 }

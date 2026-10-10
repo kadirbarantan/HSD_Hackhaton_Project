@@ -45,8 +45,24 @@ export function ListingPage() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <h1 className="text-2xl font-bold text-slate-900">{listing.title}</h1>
               {listing.status === 'Closed' && <Badge tone="slate">Closed</Badge>}
+              {listing.status === 'Completed' && <Badge tone="emerald">Completed</Badge>}
+              {listing.status === 'Cancelled' && <Badge tone="rose">Cancelled</Badge>}
             </div>
             <p className="mt-2 text-lg text-slate-600">{listing.summary}</p>
+
+            {listing.outcomeNote && (
+              <div
+                className={cn(
+                  'mt-4 rounded-xl border p-4 text-sm',
+                  listing.status === 'Completed'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
+                    : 'border-rose-200 bg-rose-50 text-rose-900',
+                )}
+              >
+                <p className="font-semibold">{listing.status === 'Completed' ? 'Completion Summary:' : 'Cancellation Reason:'}</p>
+                <p className="mt-1 whitespace-pre-line">{listing.outcomeNote}</p>
+              </div>
+            )}
 
             <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-600">
               <span className="flex items-center gap-1.5">
@@ -201,9 +217,13 @@ function ApplyCard({ listing, onChange }: { listing: Listing; onChange: (listing
                 ? "You're on this team"
                 : 'Already answered'}
           </ButtonLink>
-        ) : listing.status === 'Closed' ? (
+        ) : listing.status === 'Closed' || listing.status === 'Completed' || listing.status === 'Cancelled' ? (
           <Button className="w-full" disabled>
-            This listing is closed
+            {listing.status === 'Completed'
+              ? 'This project is completed'
+              : listing.status === 'Cancelled'
+                ? 'This listing was cancelled'
+                : 'This listing is closed'}
           </Button>
         ) : (
           <Button className="w-full" onClick={() => setOpen(true)}>
@@ -237,6 +257,7 @@ function defaultApplyMessage(listing: Listing) {
 function OwnerActions({ listing, onChange }: { listing: Listing; onChange: (listing: Listing) => void }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [dialogMode, setDialogMode] = useState<'complete' | 'cancel' | null>(null)
 
   async function toggle() {
     setBusy(true)
@@ -250,6 +271,17 @@ function OwnerActions({ listing, onChange }: { listing: Listing; onChange: (list
     }
   }
 
+  async function handleCloseWithNote(note: string) {
+    if (!dialogMode) return
+    const endpoint = dialogMode === 'complete' ? 'complete' : 'cancel'
+    const updated = await api<Listing>(`/listings/${listing.id}/${endpoint}`, {
+      method: 'POST',
+      body: { note },
+    })
+    onChange(updated)
+    setDialogMode(null)
+  }
+
   return (
     <Card className="p-6">
       <p className="font-semibold text-slate-900">This is your listing</p>
@@ -260,14 +292,45 @@ function OwnerActions({ listing, onChange }: { listing: Listing; onChange: (list
       </p>
       <FormError message={error} />
       <div className="mt-4 flex flex-col gap-2">
-        <ButtonLink to={`/listings/${listing.id}/edit`} variant="secondary">
-          <Pencil className="size-4" />
-          Edit listing
-        </ButtonLink>
-        <Button variant="ghost" disabled={busy} onClick={() => void toggle()}>
-          {listing.status === 'Open' ? 'Close this listing' : 'Reopen this listing'}
-        </Button>
+        {listing.status !== 'Completed' && listing.status !== 'Cancelled' && (
+          <ButtonLink to={`/listings/${listing.id}/edit`} variant="secondary">
+            <Pencil className="size-4" />
+            Edit listing
+          </ButtonLink>
+        )}
+
+        {(listing.status === 'Open' || listing.status === 'Closed') && (
+          <>
+            <Button variant="success" disabled={busy} onClick={() => setDialogMode('complete')}>
+              <CircleCheck className="size-4" />
+              Mark as completed
+            </Button>
+            <Button variant="danger" disabled={busy} onClick={() => setDialogMode('cancel')}>
+              Cancel project
+            </Button>
+            <Button variant="ghost" disabled={busy} onClick={() => void toggle()}>
+              {listing.status === 'Open' ? 'Close this listing' : 'Reopen this listing'}
+            </Button>
+          </>
+        )}
       </div>
+
+      {dialogMode && (
+        <MessageDialog
+          title={dialogMode === 'complete' ? 'Mark project as completed' : 'Cancel project'}
+          subtitle={
+            dialogMode === 'complete'
+              ? 'Summarise what was built or achieved. This will mark the project and team collaborations as completed.'
+              : 'Explain why the project is being cancelled. This will cancel the listing and notify collaborators.'
+          }
+          label={dialogMode === 'complete' ? 'Completion summary' : 'Cancellation reason'}
+          hint="Provide a brief explanation (at least 5 characters)."
+          defaultMessage=""
+          submitLabel={dialogMode === 'complete' ? 'Complete project' : 'Cancel project'}
+          onClose={() => setDialogMode(null)}
+          onSubmit={handleCloseWithNote}
+        />
+      )}
     </Card>
   )
 }

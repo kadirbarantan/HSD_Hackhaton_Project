@@ -164,7 +164,8 @@ public class MatchService
 
     private static MatchPartDto ScoreEvidence(User applicant, Listing listing, Voice voice, List<MatchReasonDto> reasons)
     {
-        if (applicant.Projects.Count == 0)
+        var publicProjects = applicant.Projects.Where(p => !p.IsPrivate).ToList();
+        if (publicProjects.Count == 0)
         {
             reasons.Add(new MatchReasonDto(
                 MatchReasonKind.Gap,
@@ -179,7 +180,7 @@ public class MatchService
             .Concat(listing.Needs.SelectMany(n => n.Competency.Keywords).Select(Normalize))
             .ToHashSet();
 
-        var relevant = applicant.Projects
+        var relevant = publicProjects
             .Where(p => Tags(p).Any(wanted.Contains))
             .OrderByDescending(p => p.Stars)
             .ThenByDescending(p => p.PushedAt)
@@ -198,13 +199,13 @@ public class MatchService
         {
             reasons.Add(new MatchReasonDto(
                 MatchReasonKind.Gap,
-                $"None of the {applicant.Projects.Count} imported repositories match this project",
+                $"None of the {publicProjects.Count} imported repositories match this project",
                 voice.Pick(
                     $"{voice.Name} writes code publicly, but not yet in your area.",
                     "You write code publicly, but not yet in this area.")));
         }
 
-        return new MatchPartDto("Proof of work", score, EvidenceMax, $"{relevant.Count} relevant of {applicant.Projects.Count}");
+        return new MatchPartDto("Proof of work", score, EvidenceMax, $"{relevant.Count} relevant of {publicProjects.Count}");
     }
 
     private static MatchPartDto ScoreAvailability(User applicant, Listing listing, Voice voice, List<MatchReasonDto> reasons)

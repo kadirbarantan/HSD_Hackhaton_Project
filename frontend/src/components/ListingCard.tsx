@@ -62,6 +62,16 @@ export function ListingCard({ listing }: { listing: Listing }) {
             Closed
           </Badge>
         )}
+        {listing.status === 'Completed' && (
+          <Badge className="ml-auto" tone="emerald">
+            Completed
+          </Badge>
+        )}
+        {listing.status === 'Cancelled' && (
+          <Badge className="ml-auto" tone="rose">
+            Cancelled
+          </Badge>
+        )}
         {listing.myApplication && listing.myApplication.status !== 'Withdrawn' && (
           <Badge className="ml-auto" tone={listing.myApplication.status === 'Accepted' ? 'emerald' : 'indigo'}>
             {listing.myApplication.origin === 'Invited' ? 'Invited' : 'Applied'}
