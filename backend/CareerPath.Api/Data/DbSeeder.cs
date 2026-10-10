@@ -29,7 +29,9 @@ public static class DbSeeder
             logger.LogInformation("Deleted the existing database (--reset-db).");
         }
 
-        if (!await db.Database.EnsureCreatedAsync())
+        var created = await db.Database.EnsureCreatedAsync();
+        await RoadmapSchema.UpgradeAsync(db);
+        if (!created)
         {
             // If the database already existed, ensure the new columns are present
             try { await db.Database.ExecuteSqlRawAsync("ALTER TABLE GitHubProjects ADD COLUMN IsDisplayed INTEGER NOT NULL DEFAULT 1;"); } catch { }
