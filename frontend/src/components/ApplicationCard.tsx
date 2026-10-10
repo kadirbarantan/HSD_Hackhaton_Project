@@ -10,7 +10,7 @@ import { AiReviewPanel } from './AiReviewPanel'
 import { Avatar } from './Avatar'
 import { CompetencyPill } from './CompetencyPill'
 import { MatchBreakdown, MatchRing } from './MatchScore'
-import { Badge, Button, Card, FormError, type BadgeTone } from './ui'
+import { Badge, Button, ButtonLink, Card, FormError, type BadgeTone } from './ui'
 
 const statusTones: Record<Application['status'], BadgeTone> = {
   Pending: 'amber',
@@ -144,6 +144,12 @@ export function ApplicationCard({ application, onChange, showListing = true }: A
       )}
 
       <FormError message={error} />
+
+      {application.status === 'Accepted' && (
+        <div className="mt-4">
+          <ButtonLink to={`/roadmaps/${application.id}`} variant="secondary">Our roadmap</ButtonLink>
+        </div>
+      )}
 
       {(application.canDecide || application.canWithdraw) && (
         <div className="mt-4 flex justify-end gap-2">

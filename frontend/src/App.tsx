@@ -13,6 +13,8 @@ import { PeoplePage } from './pages/PeoplePage'
 import { ProfilePage } from './pages/ProfilePage'
 import { RegisterPage } from './pages/RegisterPage'
 import { RequestsPage } from './pages/RequestsPage'
+import { RoadmapPage } from './pages/RoadmapPage'
+import { RoadmapResourcesPage } from './pages/RoadmapResourcesPage'
 
 export default function App() {
   return (
@@ -58,6 +60,8 @@ export default function App() {
               }
             />
             <Route path="login" element={<LoginPage />} />
+            <Route path="roadmaps/:applicationId" element={<RequireAuth><RoadmapPage /></RequireAuth>} />
+            <Route path="roadmaps/:applicationId/resources" element={<RequireAuth><RoadmapResourcesPage /></RequireAuth>} />
             <Route path="register" element={<RegisterPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>

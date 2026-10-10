@@ -251,3 +251,35 @@ export interface AuthResponse {
   token: string
   user: Me
 }
+
+export interface RoadmapTask {
+  userId: number
+  title: string
+  skillToPractice: string
+  deliverable: string
+  estimatedHours: number
+}
+
+export interface RoadmapMilestone {
+  title: string
+  outcome: string
+  coordination: string
+  tasks: RoadmapTask[]
+}
+
+export interface Roadmap {
+  id: number
+  content: { summary: string; gaps: string[]; milestones: RoadmapMilestone[] }
+  source: string
+  isAi: boolean
+  createdAt: string
+  progress: { milestoneIndex: number; userId: number; completed: boolean }[]
+}
+
+export interface RoadmapPageData {
+  applicationId: number
+  listingId: number
+  listingTitle: string
+  students: UserSummary[]
+  roadmap: Roadmap | null
+}
