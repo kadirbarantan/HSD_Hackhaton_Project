@@ -1,204 +1,73 @@
-# CollabMe
+# Collab Me
+### Takım arkadaşını bul. Projeni geliştir. Birlikte öğren.
 
-**Find the people who cover what you cannot.**
+Career Path, öğrencilerin kendi becerilerini tamamlayan takım arkadaşları bulmalarını ve birlikte proje geliştirerek öğrenmelerini sağlayan bir platformdur.
 
-Student projects usually die because one person can build half of them. CollabMe is where a student posts the
-project they are stuck on, says plainly which areas are outside their own expertise, and gets matched with the people
-who fill exactly those gaps.
+## Problem
 
-Built for the Education Hackathon, topic **Personal and Learning Development**.
+Öğrencilerin proje fikirleri olabilir ancak bu fikirleri hayata geçirmek için gereken tüm becerilere sahip olmaları beklenemez. Bir yazılımcı tasarımcıya, bir tasarımcı ise çalışmalarını uygulamaya dönüştürecek bir yazılımcıya ihtiyaç duyabilir.
 
-## What it does
+Takım arkadaşını bulmak da tek başına yeterli değildir. Görevleri paylaşmak, çalışmaları birleştirmek ve eksik becerileri geliştirmek için ortak bir plana ihtiyaç vardır.
 
-- **Build and learn together.** After accepting a request, open **Our roadmap** and choose **Create our roadmap**.
-  Both students get one saved project plan with shared milestones and individual tasks, learning outcomes,
-  deliverables and effort estimates. Each student checks off their own tasks; partner progress refreshes every
-  15 seconds while the page is visible. AI uses both profiles and the project. If unavailable, a labeled starter
-  template keeps this flow working. Each accepted student pair has its own plan, available only to that pair.
-- **Post what you cannot do.** A listing names up to five areas you need someone else for. Starred areas are
-  must-haves and count double in the score.
-- **Get a match score you can argue with.** Every applicant is scored out of 100 and the score is never a black box:
-  it breaks into needed areas (55), shared technologies (20), proof of work on GitHub (15) and availability (10),
-  each with a one-line explanation plus named strengths and gaps.
-- **Profiles backed by code.** Students pick their competencies with a confidence level, list their tools, and
-  connect GitHub. Their public repositories are imported through the GitHub API and used as evidence in the score, so
-  "I know Unity" is worth less than a Unity repository with stars on it.
-- **Decide with a second opinion.** Before accepting or declining a request, the listing owner can ask for a written
-  suitability report on the applicant: what fits, what does not, three questions to ask them, and a sensible first
-  task. Only the owner ever sees it.
-- **Requests go both ways.** Students apply to listings, and owners invite people the match score surfaced. Either
-  way the receiving side accepts or declines.
-- **Contact details stay private.** Email and handle are only revealed once a request has been accepted. Many users
-  here are under 18.
+## Çözümümüz
 
-## Where the AI is, and where it is not
+Career Path; proje sahibi öğrencilerle projeye katkıda bulunmak isteyen öğrencileri becerileri ve uygunlukları üzerinden buluşturur.
 
-The match score is **not** AI. It is a deterministic, inspectable formula, so the same profile always produces the
-same number and the UI can show exactly how it was built. That is on purpose: a score nobody can explain is a score
-nobody trusts.
+**Proje sahipleri de öğrencidir.** Amacımız, öğrencilerin eşit takım arkadaşları olarak birlikte üretmesini ve birbirlerinden öğrenmesini desteklemektir.
 
-The AI sits one step later, where judgement actually helps. `POST /api/applications/{id}/review` sends the project,
-the applicant's profile and the match breakdown to a language model and gets back a structured report (verdict,
-summary, strengths, risks, questions, suggested first task).
+## Nasıl Çalışır?
 
-**It works with no API key.** If `Ai:ApiKey` is empty, or the call fails or times out, the same report is written by a
-rule-based writer from the match reasons, and the UI says so ("Written by the built-in reviewer" instead of "Written
-by gpt-4o-mini"). The demo never depends on the conference Wi-Fi.
+1. **Profilini oluştur**  
+   Becerilerini, yetkinlik seviyelerini ve haftalık ayırabileceğin zamanı ekle. İstersen GitHub projelerini profiline aktar.
 
-## Tech stack
+2. **Proje paylaş veya keşfet**  
+   Proje fikrini, kullanılacak teknolojileri ve ihtiyaç duyulan becerileri belirt.
 
-| Part | Stack |
-| --- | --- |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS v4, React Router |
-| Backend | ASP.NET Core (.NET 10) Web API, EF Core, SQLite, JWT authentication |
-| External APIs | GitHub REST API (repository import), any OpenAI-compatible chat completions endpoint (optional) |
-| API docs | OpenAPI + Scalar UI at `http://localhost:5080/scalar` |
+3. **Seni tamamlayan takım arkadaşını bul**  
+   Eşleşme önerilerini ve puanların nasıl hesaplandığını incele. Projelere başvur veya başka öğrencileri projene davet et.
 
-## Getting started
+4. **Ortak yol haritanızı oluşturun**  
+   İş birliği isteği kabul edildiğinde, ortak aşamalardan ve her öğrenciye özel görevlerden oluşan bir yol haritası oluşturun.
 
-Prerequisites: [.NET 10 SDK](https://dotnet.microsoft.com/download) and [Node.js](https://nodejs.org/) 20.19+ or 22.12+.
+5. **Birlikte geliştir ve öğren**  
+   Kendi görevlerini tamamla, ortak ilerlemeyi takip et ve eksik beceriler için önerilen öğrenme kaynaklarını keşfet.
 
-Start the API (terminal 1). The SQLite database is created and filled with demo data on first run:
+## Yol Haritası Neler Sunar?
 
-```bash
-cd backend
-dotnet run --project CareerPath.Api
-```
+Her aşamada şu bilgiler yer alır:
 
-Start the web app (terminal 2):
+- Birlikte ulaşılacak hedef.
+- Her öğrencinin becerilerine uygun ayrı bir görev.
+- Geliştirilecek beceri ve ortaya çıkarılacak somut çıktı.
+- Tahmini çalışma süresi.
+- Öğrencilerin çalışmalarını nasıl birleştireceğini açıklayan koordinasyon notu.
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+Yol haritası, ek öğrenme veya destek gerektiren eksikleri de belirtir. Öğrenciler bu eksikler için hazırlanan kaynak sayfasından ilgili rehberlere ve küçük uygulama önerilerine ulaşabilir.
 
-Open http://localhost:5173. The Vite dev server forwards `/api` calls to the API on port 5080.
+Gerektiğinde bir öğretmen veya mentordan yardım almak ya da projenin kapsamını küçültmek de önerilir.
 
-To reset the demo data (do this right before presenting), stop the API and run:
+## Yapay Zekâ Nerede Kullanılıyor?
 
-```bash
-cd backend
-dotnet run --project CareerPath.Api -- --reset-db
-```
+Yapay zekâ, proje bilgilerini ve iki öğrencinin profilini birlikte değerlendirerek kişiselleştirilmiş bir yol haritası oluşturur. İş birliği başvurularının uygunluk değerlendirmelerinde de kullanılır.
 
-### Optional configuration
+**Eşleşme puanları ise kural tabanlıdır ve nasıl hesaplandıkları açıklanır.**
 
-Both integrations are optional. Store credentials in backend environment variables or .NET User Secrets,
-outside the repository. Never put real keys in tracked appsettings files or frontend `VITE_*` variables.
-The API loads User Secrets automatically in the Development environment.
+Yapay zekâ kullanılamadığında, sistem açıkça etiketlenmiş kural tabanlı bir başlangıç planı sunar. Kullanıcılar yol haritasının hangi yöntemle oluşturulduğunu görebilir.
 
-| Setting | What it does |
-| --- | --- |
-| `GitHub:Token` | A personal access token with no scopes. Raises the GitHub rate limit from 60 to 5000 requests an hour. Only matters if many people import repositories during the same demo. |
-| `Ai:ApiKey` | Enables AI roadmaps and suitability reports. Leave empty to use the built-in fallbacks. |
-| `Ai:BaseUrl` | Defaults to `https://api.openai.com/v1/`. Point it at any OpenAI-compatible endpoint, including a local one. |
-| `Ai:Model` | Defaults to `gpt-4o-mini`. |
-| `Ai:TimeoutSeconds` | Defaults to 25 seconds. A local override of 90 gives thinking models more time to complete a roadmap. |
+## Hackathon Temalarıyla İlişkisi
 
-For Gemini, use `https://generativelanguage.googleapis.com/v1beta/openai/` as `Ai:BaseUrl` and a model
-available to your Google API key (for example, `gemini-3.8-flash`). Configuration is shared by roadmaps
-and suitability reviews. Local User Secrets are outside Git but are not encrypted; deployment should
-use the hosting provider's secret store. Restart the API after changing configuration.
-Previously saved roadmaps keep their content and progress; enabling AI applies to newly created plans.
-If Gemini returns HTTP 402, check the API project's credits in Google AI Studio. A valid key alone
-does not guarantee generation is available; provider failures produce a labeled starter plan.
+### Kişisel Öğrenme ve Gelişim
+Öğrenciler, gerçek bir projeye somut katkılar sunarken yeni beceriler geliştirir.
 
-## Demo accounts
+### Eğlenceli Öğrenme ve Motivasyon
+Öğrenciler kendi seçtikleri bir proje üzerinde takım arkadaşlarıyla çalışır. Tamamlanan görevler ve görünür ilerleme, ortak hedefe ulaşma motivasyonunu destekler.
 
-All demo accounts use the password `demo1234`. The login page has a "Fill in demo login" button.
+## MVP Odağımız
 
-| Account | Who |
-| --- | --- |
-| `demo@example.com` | **Kaan Erdem**, backend student. Owns a game jam listing with people waiting for an answer, and has applied to another project. |
-| `zeynep@example.com` | Zeynep Kaya, pixel artist. Applied to Kaan's jam listing and owns a finished-art game that needs a programmer. |
-| `ipek@example.com`, `tuna@example.com`, `mert@example.com` | Artist, audio student and Unity hobbyist: the people Kaan's listing surfaces as worth asking |
-| `burak@example.com`, `emre@example.com`, `elif@example.com`, `lucas@example.com`, `aisha@example.com` | Other listing owners |
-| `ece@`, `selin@`, `deniz@`, `can@`, `ayse@example.com` | Other students |
+Basit ve anlaşılır bir deneyime odaklanıyoruz:
 
-## Demo script (about 3 minutes)
+**Takım arkadaşını bul → iş birliğine karar ver → ortak yol haritanı takip et → üreterek öğren.**
 
-1. **Home.** One line: students post what they cannot do, and get scored matches for exactly that.
-2. **Log in as the demo account → Requests.** Two people want in on the jam listing. Deniz scores 10, Zeynep 55.
-3. **Open "How we scored this" on Zeynep.** Four components, named strengths and gaps. Nothing hidden.
-4. **"Assess this applicant".** The suitability report: what fits, what to watch, what to ask her, and a first task.
-5. **Accept.** Her contact details appear. They did not exist a second earlier.
-6. **People → Worth asking.** İpek at 67 and Tuna at 52, each scored against what the listing is still missing.
-   Invite İpek; now she is the one who decides.
-7. **Her profile.** The repositories under "Public repositories" came from the GitHub API, not from a text box.
+## Kullanılan Teknolojiler
 
-## Project structure
-
-```text
-backend/
-  CareerPath.Api/
-    Controllers/        HTTP endpoints (all under /api)
-    Models/             EF Core entities
-    Dtos/               Request and response records
-    Services/           Match scoring, AI review, GitHub import, profiles, listings, tokens
-    Data/               DbContext, seeder and Seed/competencies.json
-    CareerPath.Api.http Ready-made requests for testing the API
-frontend/
-  src/
-    lib/                API client, types (mirror of the DTOs), hooks, formatting, styles
-    auth/               Auth context and provider (JWT stored in localStorage)
-    components/         Shared UI: match score, application card, AI review panel, dialogs
-    pages/              One file per page
-```
-
-## API overview
-
-| Method and route | Purpose |
-| --- | --- |
-| `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me` | Accounts and the signed-in user |
-| `GET /api/stats`, `GET /api/competencies` | Platform numbers and the competency catalog |
-| `GET /api/listings`, `GET /api/listings/{id}` | Browse and read listings, each with the viewer's own match score |
-| `POST /api/listings`, `PUT`/`DELETE /api/listings/{id}`, `POST /api/listings/{id}/close`, `/reopen`, `/complete`, `/cancel` | Manage your listings and mark project outcomes |
-| `GET /api/listings/{id}/applications` | Everyone who applied or was invited, owner only |
-| `POST /api/listings/{id}/apply`, `POST /api/listings/{id}/invite` | The two directions a request can go |
-| `GET /api/applications`, `POST /api/applications/{id}/accept`, `/reject`, `/withdraw`, `/cancel` | The requests inbox & collaboration management |
-| `POST /api/applications/{id}/review` | Write (or rewrite) the suitability report. Owner only |
-| `GET /api/users`, `GET /api/users/suggestions`, `GET /api/users/{id}`, `PUT /api/users/me` | Directory, people worth inviting, profiles |
-| `POST /api/users/me/github` | Import the signed-in user's public repositories from GitHub |
-
-Errors use the standard ProblemDetails format. Protected endpoints need `Authorization: Bearer <token>`.
-
-Roadmaps use `GET` and `POST /api/applications/{id}/roadmap` to read or create the saved plan.
-`PUT /api/applications/{id}/roadmap/milestones/{index}/progress` accepts `{ "completed": true }` for the
-signed-in student's task (zero-based milestone index). Requests must be accepted. Repeated creation returns the
-existing plan. Plans are fixed after generation; students can check and uncheck their own tasks.
-Startup adds roadmap tables to existing SQLite databases without resetting their data.
-
-Roadmaps explicitly identify whether they were generated by AI or adapted from the rule-based starter
-template. **Agree on these gaps first → Find learning resources** opens a participant-only page with
-curated publisher links and a small practice exercise per gap. Suggestions match topics in the saved
-gap text; students can choose another topic for browsing. This does not edit the plan or task progress.
-The resource catalog lives in `frontend/src/lib/learningResources.ts`; model output never supplies link URLs.
-
-Run the isolated roadmap checks (model stubs and a temporary SQLite database, no API key needed):
-
-```bash
-dotnet run --project backend/CareerPath.Checks
-```
-
-To additionally test your configured provider, append `-- --live-ai`. This explicitly sends synthetic
-student profiles for one real model request (provider charges may apply), reads backend User Secrets
-or environment variables, and fails if generation falls back. It does not modify the app database.
-
-## Team split
-
-| Who | Owns |
-| --- | --- |
-| Front-end developer | Everything in `frontend/src`: pages, components, styling |
-| Back-end developer 1 | Auth, profiles, the competency catalog and the GitHub import (`AuthController`, `UsersController`, `ProfileService`, `GitHubService`) |
-| Back-end developer 2 | Listings, requests, match scoring and the AI review (`ListingsController`, `ApplicationsController`, `MatchService`, `AiReviewService`) |
-
-When an API response changes, update the matching record in `backend/CareerPath.Api/Dtos` and the interface in
-`frontend/src/lib/types.ts` together.
-
-## Ideas for after the MVP
-
-- Weight the score by what a person has actually finished here, not only by what they claim.
-- Let the owner mark which need an accepted person took, so a listing can close one gap at a time.
-- Notifications when a request is answered.
-- A shared checklist for teams that formed, so the match is the start of something rather than the end.
+React · TypeScript · Tailwind CSS · ASP.NET Core · SQLite · Gemini API · GitHub API
