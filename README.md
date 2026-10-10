@@ -1,8 +1,8 @@
-# Career Path
+# CollabMe
 
 **Find the people who cover what you cannot.**
 
-Student projects usually die because one person can build half of them. Career Path is where a student posts the
+Student projects usually die because one person can build half of them. CollabMe is where a student posts the
 project they are stuck on, says plainly which areas are outside their own expertise, and gets matched with the people
 who fill exactly those gaps.
 

@@ -45,11 +45,11 @@ export function Layout() {
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:gap-6">
-          <Link to="/" className="flex items-center gap-2 font-bold text-slate-900">
+          <Link to="/" aria-label="CollabMe home" className="flex items-center gap-2 font-bold text-slate-900">
             <span className="flex size-8 items-center justify-center rounded-lg bg-linear-to-br from-indigo-600 to-fuchsia-600 text-white">
               <Handshake className="size-5" />
             </span>
-            <span className="hidden md:inline">Career Path</span>
+            <span className="hidden md:inline">CollabMe</span>
           </Link>
 
           <nav className="flex items-center gap-1 text-sm">
@@ -112,7 +112,7 @@ export function Layout() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-6 text-sm text-slate-500">
           <p className="flex items-center gap-2">
             <Handshake className="size-4 text-indigo-600" />
-            Career Path: find the people who cover what you cannot.
+            CollabMe: find the people who cover what you cannot.
           </p>
           <p>Education Hackathon 2026 · Personal and Learning Development</p>
         </div>

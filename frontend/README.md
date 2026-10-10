@@ -1,4 +1,4 @@
-# Career Path web app
+# CollabMe web app
 
 React + TypeScript + Vite + Tailwind CSS. See the [main README](../README.md) for how to run the whole project.
 
