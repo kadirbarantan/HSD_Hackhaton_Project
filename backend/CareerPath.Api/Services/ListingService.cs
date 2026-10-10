@@ -55,6 +55,7 @@ public class ListingService(AppDbContext db, MatchService matches)
             listing.HoursPerWeek,
             listing.Timeline,
             listing.Status,
+            listing.OutcomeNote,
             listing.CreatedAt,
             listing.Applications.Count(a => a.Status != ApplicationStatus.Withdrawn),
             listing.Applications.Count(a =>
@@ -69,7 +70,7 @@ public class ListingService(AppDbContext db, MatchService matches)
     {
         var listing = application.Listing;
         var isOwner = listing.OwnerId == viewerId;
-        var accepted = application.Status == ApplicationStatus.Accepted;
+        var accepted = application.Status == ApplicationStatus.Accepted || application.Status == ApplicationStatus.Completed;
         var other = isOwner ? application.Applicant : listing.Owner;
 
         return new ApplicationDto(
@@ -89,6 +90,7 @@ public class ListingService(AppDbContext db, MatchService matches)
                 viewerId == application.ApplicantId ? MatchService.MatchVoice.Applicant : MatchService.MatchVoice.Owner),
             application.Status == ApplicationStatus.Pending && viewerId == application.DeciderId,
             application.Status == ApplicationStatus.Pending && viewerId == application.SenderId,
+            application.Status == ApplicationStatus.Accepted && (isOwner || viewerId == application.ApplicantId),
             // The write-up judges the applicant, so only the listing owner ever sees it.
             isOwner ? ToReviewDto(application.Review) : null,
             accepted ? new ContactDto(other.Email, other.ContactHandle) : null);

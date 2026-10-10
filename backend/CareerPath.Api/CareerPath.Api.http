@@ -99,3 +99,30 @@ Content-Type: application/json
   "userId": 13,
   "message": "Your pixel art is exactly the style I had in mind for the jam. Would you like to join?"
 }
+
+### Mark a listing as completed (owner only)
+POST {{baseUrl}}/api/listings/1/complete
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "note": "We built the game prototype, finished 5 levels, and submitted to the game jam!"
+}
+
+### Cancel a listing (owner only)
+POST {{baseUrl}}/api/listings/1/cancel
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "note": "The project scope was too large and team members had conflicting schedules."
+}
+
+### Cancel an active collaboration (owner or accepted applicant)
+POST {{baseUrl}}/api/applications/1/cancel
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "reason": "Unable to dedicate required hours due to exams."
+}

@@ -153,10 +153,10 @@ frontend/
 | `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me` | Accounts and the signed-in user |
 | `GET /api/stats`, `GET /api/competencies` | Platform numbers and the competency catalog |
 | `GET /api/listings`, `GET /api/listings/{id}` | Browse and read listings, each with the viewer's own match score |
-| `POST /api/listings`, `PUT`/`DELETE /api/listings/{id}`, `POST /api/listings/{id}/close`, `/reopen` | Manage your listings |
+| `POST /api/listings`, `PUT`/`DELETE /api/listings/{id}`, `POST /api/listings/{id}/close`, `/reopen`, `/complete`, `/cancel` | Manage your listings and mark project outcomes |
 | `GET /api/listings/{id}/applications` | Everyone who applied or was invited, owner only |
 | `POST /api/listings/{id}/apply`, `POST /api/listings/{id}/invite` | The two directions a request can go |
-| `GET /api/applications`, `POST /api/applications/{id}/accept`, `/reject`, `/withdraw` | The requests inbox |
+| `GET /api/applications`, `POST /api/applications/{id}/accept`, `/reject`, `/withdraw`, `/cancel` | The requests inbox & collaboration management |
 | `POST /api/applications/{id}/review` | Write (or rewrite) the suitability report. Owner only |
 | `GET /api/users`, `GET /api/users/suggestions`, `GET /api/users/{id}`, `PUT /api/users/me` | Directory, people worth inviting, profiles |
 | `POST /api/users/me/github` | Import the signed-in user's public repositories from GitHub |

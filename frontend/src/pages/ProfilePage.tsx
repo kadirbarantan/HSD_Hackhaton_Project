@@ -142,25 +142,39 @@ export function ProfilePage() {
                 : 'Imported from the GitHub API, not typed in by hand.'
             }
             action={
-              profile.isSelf && profile.projects.length === 0 ? (
+              profile.isSelf ? (
                 <ButtonLink to="/profile/edit" variant="secondary" size="sm">
-                  <GitHubIcon className="size-4" />
-                  Connect GitHub
+                  {profile.projects.length === 0 && !profile.gitHubSyncedAt ? (
+                    <>
+                      <GitHubIcon className="size-4" />
+                      Connect GitHub
+                    </>
+                  ) : (
+                    <>
+                      <Pencil className="size-3.5" />
+                      Choose repositories
+                    </>
+                  )}
                 </ButtonLink>
               ) : undefined
             }
           >
-            {profile.projects.length === 0 ? (
+            {profile.projects.filter((p) => !p.isPrivate).slice(0, 10).length === 0 ? (
               <p className="text-sm text-slate-500">
                 {profile.isSelf
-                  ? 'Add your GitHub username in your profile and we will pull in your repositories.'
-                  : 'No repositories imported yet.'}
+                  ? profile.gitHubSyncedAt
+                    ? 'You have imported repositories from GitHub, but none are selected to display. Click "Choose repositories" to feature up to 10 on your profile.'
+                    : 'Add your GitHub username in your profile and we will pull in your repositories.'
+                  : 'No public repositories displayed.'}
               </p>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
-                {profile.projects.map((project) => (
-                  <ProjectCard key={project.url} project={project} />
-                ))}
+                {profile.projects
+                  .filter((p) => !p.isPrivate)
+                  .slice(0, 10)
+                  .map((project) => (
+                    <ProjectCard key={project.url} project={project} />
+                  ))}
               </div>
             )}
           </Panel>

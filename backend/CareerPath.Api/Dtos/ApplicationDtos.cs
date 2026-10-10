@@ -35,6 +35,7 @@ public record ApplicationDto(
     MatchDto Match,
     bool CanDecide,
     bool CanWithdraw,
+    bool CanCancel,
     AiReviewDto? Review,
     ContactDto? Contact);
 
@@ -44,3 +45,6 @@ public record ApplyRequest(
 public record InviteRequest(
     [Range(1, int.MaxValue)] int UserId,
     [Required, StringLength(800, MinimumLength = 20)] string Message);
+
+public record CancelApplicationRequest(
+    [StringLength(500)] string? Reason);

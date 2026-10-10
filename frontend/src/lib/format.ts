@@ -48,6 +48,8 @@ export const statusLabels: Record<ApplicationStatus, string> = {
   Accepted: 'Accepted',
   Rejected: 'Not this time',
   Withdrawn: 'Withdrawn',
+  Completed: 'Completed',
+  Cancelled: 'Cancelled',
 }
 
 /** "Computer Engineering, year 2, Istanbul Technical University" */
